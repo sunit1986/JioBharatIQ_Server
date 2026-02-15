@@ -1,0 +1,32 @@
+---
+description: Rules for building JDS prototypes
+globs: ["*.html", "*.jsx", "*.tsx", "*.css", "*.vue", "*.svelte"]
+alwaysApply: true
+---
+
+# JDS Prototyping Rules
+
+BEFORE writing any UI code, you MUST:
+1. Call the `get_assets` MCP tool to get asset file paths
+2. Copy fonts, icons, and animations into the project
+
+## STRICT RULES — violations will break the design system
+
+### NO EMOJIS
+- NEVER use emojis (🔍 ❤️ ⚡ etc.) anywhere in the UI
+- Use JDS icon components from assets/icons/ instead (e.g. IcSearch, IcChat, IcMic)
+
+### NO SYSTEM FONTS
+- NEVER use Inter, Arial, Helvetica, Roboto, SF Pro, sans-serif, or any system font
+- ALWAYS load and use JioType from assets/fonts/
+- Add @font-face declarations pointing to assets/fonts/woff2/ or assets/fonts/ttf/
+
+### NO HARDCODED VALUES
+- NEVER hardcode colors, spacing, or typography values
+- Call `resolve_token` MCP tool to get the correct JDS token values
+- Call `lookup_component` MCP tool before implementing any component
+
+### NO PLACEHOLDER ASSETS
+- NEVER use placeholder images, dummy icons, or fake animations
+- Use real assets from the `get_assets` MCP tool response
+- Use HelloJio animations from assets/animations/ for AI/assistant states

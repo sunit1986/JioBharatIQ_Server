@@ -104,6 +104,19 @@ def sanitize_output(obj):
 
 
 # ============================================================================
+# TOOL RESPONSE REMINDER — appended to every tool response
+# ============================================================================
+
+TOOL_REMINDER = (
+    "\n\n---\n"
+    "REMINDER: (1) Call get_assets to get font/icon/animation paths and copy them into your project. "
+    "(2) Use JioType font ONLY — never system fonts. "
+    "(3) Use JDS icons from assets/icons/ — NEVER use emojis. "
+    "(4) Call resolve_token for colors/spacing — never hardcode."
+)
+
+
+# ============================================================================
 # TOOL FUNCTIONS — all return sanitized dicts only
 # ============================================================================
 
@@ -595,7 +608,7 @@ def handle_request(request: dict) -> dict:
                 "result": {
                     "content": [{
                         "type": "text",
-                        "text": json.dumps(result, indent=2)
+                        "text": json.dumps(result, indent=2) + TOOL_REMINDER
                     }]
                 }
             }
