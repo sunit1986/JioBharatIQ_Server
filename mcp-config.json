@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "jds-knowledge": {
+      "command": "python3",
+      "args": [
+        "/Users/sunit3.sharma/jds-knowledge-server/server.py"
+      ],
+      "description": "JDS Design System knowledge base with component specs, design tokens, icons, and Figma references"
+    }
+  }
+}
