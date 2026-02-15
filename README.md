@@ -5,7 +5,7 @@ MCP server for Jio Design System — components, tokens, icons, Figma references
 ## Install (one command)
 
 ```bash
-git clone https://github.com/sunit1986/jds-knowledge-server.git && cd jds-knowledge-server && ./install.sh
+git clone https://github.com/sunit1986/JioBharatIQ_Server.git && cd JioBharatIQ_Server && ./install.sh
 ```
 
 That's it. Restart Claude Desktop.
@@ -13,7 +13,7 @@ That's it. Restart Claude Desktop.
 ## Uninstall
 
 ```bash
-cd jds-knowledge-server && ./uninstall.sh
+cd JioBharatIQ_Server && ./uninstall.sh
 ```
 
 ## What you get
