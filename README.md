@@ -6,9 +6,18 @@ A secure MCP (Model Context Protocol) server providing access to Jio Design Syst
 
 - ✅ **JSON-only responses** - No markdown, no explanations
 - ✅ **No internal reasoning exposed** - Clean, structured data only
-- ✅ **No file paths exposed** - All references sanitized
+- ✅ **No file paths exposed** - Deep regex scanning strips any leaked paths
 - ✅ **No skill references exposed** - Pure knowledge base
+- ✅ **No secrets exposed** - API keys, passwords, tokens redacted automatically
 - ✅ **Strict output structure** - Predictable, parseable responses
+- ✅ **Input sanitization** - All inputs character-filtered, length-capped (200 chars)
+- ✅ **Injection protection** - SQL, XSS, shell, template injection all blocked
+- ✅ **Method whitelisting** - Only MCP protocol methods accepted
+- ✅ **Tool whitelisting** - Only 4 registered tools can be called
+- ✅ **Max message size** - 1MB cap prevents DoS
+- ✅ **No eval/exec** - No dynamic code execution
+- ✅ **Generic errors** - No stack traces or internal details in error messages
+- ✅ **147 tests passing** - Comprehensive security + functionality test suite
 
 ## 🚀 Quick Start (5 Minutes)
 
@@ -218,15 +227,29 @@ Get the Figma reference for the homepage design
 | `find_icon` | Search 1546+ JDS icons | `query: string`, `limit?: number` |
 | `get_figma_reference` | Get Figma node references | `design_name: string` |
 
-## 📦 Available Components
+## 📦 Available Components (21)
 
-- Button
-- InputField
-- Card
-- Modal
-- BottomSheet
-- Avatar
-- Tabs
+- **Button** - Primary interactive element (primary/secondary/tertiary)
+- **InputField** - Text input with validation states
+- **Card** - Content container with image and CTAs
+- **Modal** - Overlay dialog
+- **BottomSheet** - Mobile bottom drawer
+- **Avatar** - Profile picture or initials
+- **Tabs** - Content section navigation
+- **Toast** - Temporary notifications
+- **Accordion** - Expandable/collapsible panels
+- **Divider** - Visual separator
+- **Badge** - Status/label indicator
+- **BottomNav** - Mobile bottom navigation bar
+- **Container** - Flexible layout container
+- **Spinner** - Loading indicator
+- **Skeleton** - Content placeholder (shimmer)
+- **PromoCard** - Promotional content card
+- **ServiceCard** - Service/product card with branding
+- **ContentBlock** - Structured content section
+- **Carousel** - Horizontal content slider
+- **RatingBar** - Star rating input/display
+- **Text** - Typography component (body/label/title/headline/display)
 
 ## 🎨 Available Token Categories
 

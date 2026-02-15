@@ -319,39 +319,736 @@ COMPONENTS = {
         "name": "Tabs",
         "import_path": "@jds/core",
         "description": "Navigation tabs for content sections",
-        "variants": ["default", "underline", "pills"],
+        "overflow_options": ["fit", "scroll", "arrows"],
         "props": {
-            "tabs": {
+            "items": {
                 "type": "array",
                 "required": True,
-                "description": "Array of tab objects {label, value, icon?}"
+                "description": "Array of tab objects [{label: string}]"
             },
             "activeTab": {
+                "type": "number",
+                "default": 0,
+                "description": "Active tab index"
+            },
+            "overflow": {
                 "type": "string",
-                "required": True,
-                "description": "Currently active tab value"
+                "options": ["fit", "scroll", "arrows"],
+                "default": "fit",
+                "description": "Overflow behavior"
+            },
+            "appearance": {
+                "type": "string",
+                "default": "normal",
+                "description": "Visual appearance"
+            },
+            "fullWidth": {
+                "type": "boolean",
+                "default": False,
+                "description": "Expand tabs to full width"
+            },
+            "background": {
+                "type": "boolean",
+                "default": False,
+                "description": "Show background"
             },
             "onChange": {
                 "type": "function",
-                "required": True,
-                "description": "Tab change handler"
-            },
-            "variant": {
-                "type": "string",
-                "options": ["default", "underline", "pills"],
-                "default": "default",
-                "description": "Visual variant"
+                "description": "Tab change handler (index) => void"
             }
         },
         "code_example": """import { Tabs } from '@jds/core';
 
 <Tabs
-  tabs={[
-    { label: 'Home', value: 'home' },
-    { label: 'Profile', value: 'profile' }
+  items={[
+    { label: 'Home' },
+    { label: 'Magazines' },
+    { label: 'News Papers' }
   ]}
-  activeTab={activeTab}
-  onChange={setActiveTab}
+  activeTab={0}
+  overflow="fit"
+  onChange={(index) => setActive(index)}
+/>"""
+    },
+    "Toast": {
+        "name": "Toast",
+        "import_path": "@jds/core",
+        "description": "Temporary notification messages",
+        "props": {
+            "title": {
+                "type": "string",
+                "required": True,
+                "description": "Toast title"
+            },
+            "description": {
+                "type": "string",
+                "description": "Toast description"
+            },
+            "dismissAfter": {
+                "type": "number",
+                "default": 5000,
+                "description": "Auto-dismiss in milliseconds"
+            },
+            "primaryCTA": {
+                "type": "object",
+                "description": "Primary action {title: string}"
+            },
+            "secondaryCTA": {
+                "type": "object",
+                "description": "Secondary action {title: string}"
+            },
+            "icon": {
+                "type": "ReactNode",
+                "description": "Leading icon"
+            },
+            "open": {
+                "type": "boolean",
+                "default": True,
+                "description": "Toast visibility"
+            },
+            "showClose": {
+                "type": "boolean",
+                "default": True,
+                "description": "Show close button"
+            },
+            "onClose": {
+                "type": "function",
+                "description": "Close handler"
+            }
+        },
+        "code_example": """import { Toast } from '@jds/core';
+
+<Toast
+  title="Success!"
+  description="Your changes have been saved."
+  dismissAfter={3000}
+  onClose={() => {}}
+/>"""
+    },
+    "Accordion": {
+        "name": "Accordion",
+        "import_path": "@jds/core",
+        "description": "Expandable/collapsible content panels",
+        "icon_types": ["chevron", "plus"],
+        "props": {
+            "iconType": {
+                "type": "string",
+                "options": ["chevron", "plus"],
+                "default": "chevron",
+                "description": "Expand/collapse icon type"
+            },
+            "allowMultiple": {
+                "type": "boolean",
+                "default": False,
+                "description": "Allow multiple panels open"
+            },
+            "expanded": {
+                "type": "array",
+                "description": "Array of expanded panel indices"
+            },
+            "onChange": {
+                "type": "function",
+                "description": "Expansion change handler"
+            }
+        },
+        "sub_components": {
+            "AccordionPanel": {
+                "props": {
+                    "header": {"type": "string", "description": "Panel header text"},
+                    "subtitle": {"type": "string", "description": "Panel subtitle"},
+                    "disabled": {"type": "boolean", "default": False, "description": "Disable panel"},
+                    "children": {"type": "ReactNode", "description": "Panel content"}
+                }
+            }
+        },
+        "code_example": """import { Accordion, AccordionPanel } from '@jds/core';
+
+<Accordion iconType="chevron" allowMultiple={false}>
+  <AccordionPanel header="Panel 1" subtitle="Subtitle">
+    Content here
+  </AccordionPanel>
+  <AccordionPanel header="Panel 2">
+    More content
+  </AccordionPanel>
+</Accordion>"""
+    },
+    "Divider": {
+        "name": "Divider",
+        "import_path": "@jds/core",
+        "description": "Visual separator between content sections",
+        "props": {
+            "orientation": {
+                "type": "string",
+                "options": ["horizontal", "vertical"],
+                "default": "horizontal",
+                "description": "Divider direction"
+            },
+            "label": {
+                "type": "string",
+                "description": "Optional label text (e.g., 'OR')"
+            },
+            "pad": {
+                "type": "string",
+                "default": "medium",
+                "description": "Padding size"
+            },
+            "padPosition": {
+                "type": "string",
+                "options": ["all", "left", "right", "top", "bottom"],
+                "default": "all",
+                "description": "Padding position"
+            }
+        },
+        "code_example": """import { Divider } from '@jds/core';
+
+<Divider />
+<Divider label="OR" />
+<Divider orientation="vertical" />"""
+    },
+    "Badge": {
+        "name": "Badge",
+        "import_path": "@jds/core",
+        "description": "Small status or label indicator",
+        "kinds": ["normal", "service"],
+        "sizes": ["small", "medium", "large"],
+        "badge_types": ["notification", "status", "informational", "brand"],
+        "props": {
+            "label": {
+                "type": "string",
+                "required": True,
+                "description": "Badge text"
+            },
+            "kind": {
+                "type": "string",
+                "options": ["normal", "service"],
+                "default": "normal",
+                "description": "Badge type"
+            },
+            "size": {
+                "type": "string",
+                "options": ["small", "medium", "large"],
+                "default": "medium",
+                "description": "Badge size"
+            },
+            "icon": {
+                "type": "ReactNode",
+                "description": "Optional icon"
+            }
+        },
+        "code_example": """import { Badge } from '@jds/core';
+import { IcFavorite } from '@jds/core-icons';
+
+<Badge kind="normal" label="NEW" size="medium" />
+<Badge kind="service" label="Saavn" icon={<PsJioSaavn />} />"""
+    },
+    "BottomNav": {
+        "name": "BottomNav",
+        "import_path": "@jds/core",
+        "description": "Bottom navigation bar for mobile apps",
+        "props": {
+            "items": {
+                "type": "array",
+                "required": True,
+                "description": "Nav items [{icon, title?, disabled?}]"
+            },
+            "activeIndex": {
+                "type": "number",
+                "default": 0,
+                "description": "Active item index"
+            },
+            "showLabel": {
+                "type": "boolean",
+                "default": True,
+                "description": "Show item labels"
+            },
+            "multiLine": {
+                "type": "boolean",
+                "default": False,
+                "description": "Allow multi-line labels"
+            },
+            "onChange": {
+                "type": "function",
+                "description": "Navigation handler (index) => void"
+            }
+        },
+        "code_example": """import { BottomNav } from '@jds/core';
+
+<BottomNav
+  items={[
+    { icon: 'ic_home', title: 'Home' },
+    { icon: 'ic_favorite', title: 'Favorite' },
+    { icon: 'ic_camera', title: 'Camera' },
+    { icon: 'ic_downloads', title: 'Downloads' }
+  ]}
+  activeIndex={0}
+  showLabel={true}
+  onChange={(index) => setActive(index)}
+/>"""
+    },
+    "Container": {
+        "name": "Container",
+        "import_path": "@jds/core",
+        "description": "Flexible layout container with alignment and spacing",
+        "props": {
+            "verticalAlign": {
+                "type": "string",
+                "options": ["start", "center", "end"],
+                "default": "start",
+                "description": "Vertical alignment"
+            },
+            "horizontalAlign": {
+                "type": "string",
+                "options": ["start", "center", "end"],
+                "default": "start",
+                "description": "Horizontal alignment"
+            },
+            "direction": {
+                "type": "string",
+                "options": ["row", "column"],
+                "default": "row",
+                "description": "Layout direction"
+            },
+            "gap": {
+                "type": "string",
+                "description": "Gap between children"
+            },
+            "width": {
+                "type": "string",
+                "description": "Container width"
+            },
+            "height": {
+                "type": "string",
+                "description": "Container height"
+            },
+            "fullWidth": {
+                "type": "boolean",
+                "default": False,
+                "description": "Full width container"
+            },
+            "overflow": {
+                "type": "string",
+                "options": ["visible", "hidden", "scroll", "auto"],
+                "default": "visible",
+                "description": "Overflow behavior"
+            }
+        },
+        "code_example": """import { Container } from '@jds/core';
+
+<Container
+  direction="column"
+  gap="16"
+  verticalAlign="center"
+  horizontalAlign="center"
+>
+  {children}
+</Container>"""
+    },
+    "Spinner": {
+        "name": "Spinner",
+        "import_path": "@jds/core",
+        "description": "Loading indicator",
+        "kinds": ["normal", "inline", "vibrant"],
+        "sizes": ["small", "medium"],
+        "props": {
+            "kind": {
+                "type": "string",
+                "options": ["normal", "inline", "vibrant"],
+                "default": "normal",
+                "description": "Visual style"
+            },
+            "size": {
+                "type": "string",
+                "options": ["small", "medium"],
+                "default": "medium",
+                "description": "Spinner size"
+            },
+            "label": {
+                "type": "string",
+                "description": "Loading text"
+            },
+            "labelPosition": {
+                "type": "string",
+                "options": ["right", "bottom"],
+                "default": "right",
+                "description": "Label placement"
+            },
+            "isOverlay": {
+                "type": "boolean",
+                "default": False,
+                "description": "Show as overlay"
+            }
+        },
+        "code_example": """import { Spinner } from '@jds/core';
+
+<Spinner kind="normal" size="medium" label="Loading..." />"""
+    },
+    "Skeleton": {
+        "name": "Skeleton",
+        "import_path": "@jds/core",
+        "description": "Content placeholder during loading",
+        "shapes": ["circle", "rectangle", "square", "heading", "paragraph"],
+        "props": {
+            "shape": {
+                "type": "string",
+                "options": ["circle", "rectangle", "square", "heading", "paragraph"],
+                "required": True,
+                "description": "Skeleton shape"
+            },
+            "width": {
+                "type": "number",
+                "description": "Container width"
+            },
+            "animated": {
+                "type": "boolean",
+                "default": True,
+                "description": "Enable shimmer animation"
+            }
+        },
+        "code_example": """import { Skeleton } from '@jds/core';
+
+<Skeleton shape="rectangle" width={200} animated={true} />
+<Skeleton shape="circle" width={48} />"""
+    },
+    "PromoCard": {
+        "name": "PromoCard",
+        "import_path": "@jds/core",
+        "description": "Promotional content card with rich media",
+        "orientations": ["vertical", "horizontal"],
+        "sizes": ["default", "compact"],
+        "image_ratios": ["wide", "square", "landscape", "portrait"],
+        "props": {
+            "title": {
+                "type": "string",
+                "required": True,
+                "description": "Promo title"
+            },
+            "description": {
+                "type": "string",
+                "description": "Promo description"
+            },
+            "image": {
+                "type": "string",
+                "description": "Image URL"
+            },
+            "primaryCTA": {
+                "type": "string",
+                "description": "Action button label"
+            },
+            "orientation": {
+                "type": "string",
+                "options": ["vertical", "horizontal"],
+                "default": "vertical",
+                "description": "Layout orientation"
+            },
+            "imageRatio": {
+                "type": "string",
+                "options": ["wide", "square", "landscape", "portrait"],
+                "default": "wide",
+                "description": "Image aspect ratio"
+            },
+            "size": {
+                "type": "string",
+                "options": ["default", "compact"],
+                "default": "default",
+                "description": "Card size"
+            },
+            "shadow": {
+                "type": "boolean",
+                "default": False,
+                "description": "Show card shadow"
+            }
+        },
+        "code_example": """import { PromoCard } from '@jds/core';
+
+<PromoCard
+  title="Take your news everywhere"
+  description="Subscribe now"
+  image="images/promo.png"
+  primaryCTA="Get Now"
+  orientation="vertical"
+  imageRatio="wide"
+/>"""
+    },
+    "ServiceCard": {
+        "name": "ServiceCard",
+        "import_path": "@jds/core",
+        "description": "Card for service/product display with branding",
+        "sizes": ["s", "xs", "xxs"],
+        "image_ratios": ["wide", "square", "landscape", "portrait"],
+        "props": {
+            "title": {
+                "type": "string",
+                "required": True,
+                "description": "Service title"
+            },
+            "description": {
+                "type": "string",
+                "description": "Service description"
+            },
+            "image": {
+                "type": "string",
+                "description": "Service image URL"
+            },
+            "primaryCTA": {
+                "type": "string",
+                "description": "Action button label"
+            },
+            "size": {
+                "type": "string",
+                "options": ["s", "xs", "xxs"],
+                "default": "s",
+                "description": "Card size"
+            },
+            "caption": {
+                "type": "object",
+                "description": "Service badge {label, icon}"
+            }
+        },
+        "code_example": """import { ServiceCard } from '@jds/core';
+
+<ServiceCard
+  title="With Love, from Jio"
+  description="Support text line"
+  image="https://example.com/image.jpg"
+  primaryCTA="Get"
+  size="s"
+  caption={{ label: "Saavn", icon: "ps_jio_saavn" }}
+/>"""
+    },
+    "ContentBlock": {
+        "name": "ContentBlock",
+        "import_path": "@jds/core",
+        "description": "Structured content section with heading and CTAs",
+        "sizes": ["xxs", "xs", "s", "m", "l", "xl"],
+        "props": {
+            "size": {
+                "type": "string",
+                "options": ["xxs", "xs", "s", "m", "l", "xl"],
+                "default": "m",
+                "description": "Content block size"
+            },
+            "caption": {
+                "type": "string",
+                "description": "Caption text"
+            },
+            "title": {
+                "type": "string",
+                "required": True,
+                "description": "Block title"
+            },
+            "description": {
+                "type": "string",
+                "description": "Block description"
+            },
+            "primaryCTA": {
+                "type": "string",
+                "description": "Primary action label"
+            },
+            "secondaryCTA": {
+                "type": "string",
+                "description": "Secondary action label"
+            },
+            "invertCTA": {
+                "type": "boolean",
+                "default": False,
+                "description": "Swap CTA positions"
+            },
+            "ctaWrap": {
+                "type": "string",
+                "options": ["horizontal", "vertical"],
+                "default": "horizontal",
+                "description": "CTA layout direction"
+            }
+        },
+        "code_example": """import { ContentBlock } from '@jds/core';
+
+<ContentBlock
+  size="m"
+  title="Section Title"
+  description="Description text"
+  primaryCTA="Get Now"
+  secondaryCTA="Learn More"
+/>"""
+    },
+    "Carousel": {
+        "name": "Carousel",
+        "import_path": "@jds/core",
+        "description": "Horizontal content slider with indicators",
+        "indicator_types": ["dot", "none", "label", "dot with label"],
+        "density_options": ["relaxed", "condensed"],
+        "props": {
+            "showArrows": {
+                "type": "boolean",
+                "default": True,
+                "description": "Show navigation arrows"
+            },
+            "indicatorType": {
+                "type": "string",
+                "options": ["dot", "none", "label", "dot with label"],
+                "default": "dot",
+                "description": "Slide indicator type"
+            },
+            "density": {
+                "type": "string",
+                "options": ["relaxed", "condensed"],
+                "default": "relaxed",
+                "description": "Spacing density"
+            },
+            "autoPlay": {
+                "type": "boolean",
+                "default": False,
+                "description": "Auto-advance slides"
+            },
+            "showPlayPause": {
+                "type": "boolean",
+                "default": False,
+                "description": "Show play/pause control"
+            },
+            "children": {
+                "type": "ReactNode",
+                "description": "Slide content elements"
+            }
+        },
+        "code_example": """import { Carousel } from '@jds/core';
+
+<Carousel indicatorType="dot" density="relaxed" showArrows={true}>
+  <Card title="Card 1" />
+  <Card title="Card 2" />
+  <Card title="Card 3" />
+</Carousel>"""
+    },
+    "RatingBar": {
+        "name": "RatingBar",
+        "import_path": "@jds/core",
+        "description": "Star rating input and display",
+        "types": ["interactive", "read_only_expanded", "read_only_compact"],
+        "sizes": ["small", "medium", "large"],
+        "props": {
+            "type": {
+                "type": "string",
+                "options": ["interactive", "read_only_expanded", "read_only_compact"],
+                "default": "interactive",
+                "description": "Rating bar behavior"
+            },
+            "size": {
+                "type": "string",
+                "options": ["small", "medium", "large"],
+                "default": "medium",
+                "description": "Star size"
+            },
+            "value": {
+                "type": "number",
+                "required": True,
+                "description": "Current rating value"
+            },
+            "maxValue": {
+                "type": "number",
+                "default": 5,
+                "description": "Maximum rating"
+            },
+            "label": {
+                "type": "string",
+                "description": "Rating label"
+            },
+            "labelPosition": {
+                "type": "string",
+                "options": ["top_left", "top_center", "bottom_left", "bottom_center", "left", "right"],
+                "default": "top_left",
+                "description": "Label placement"
+            },
+            "onChange": {
+                "type": "function",
+                "description": "Rating change handler"
+            }
+        },
+        "code_example": """import { RatingBar } from '@jds/core';
+
+<RatingBar
+  type="interactive"
+  size="medium"
+  value={3}
+  maxValue={5}
+  onChange={(value) => setRating(value)}
+/>"""
+    },
+    "Text": {
+        "name": "Text",
+        "import_path": "@jds/core",
+        "description": "Typography component for all text rendering",
+        "variants": ["body", "label", "title", "headline", "display"],
+        "sizes": ["4XS", "3XS", "2XS", "XS", "S", "M", "L", "XL", "2XL"],
+        "weights": ["low", "medium", "high"],
+        "appearances": ["primary", "secondary", "sparkle", "neutral", "positive", "warning", "negative", "informative"],
+        "props": {
+            "text": {
+                "type": "string",
+                "required": True,
+                "description": "Text content"
+            },
+            "variant": {
+                "type": "string",
+                "options": ["body", "label", "title", "headline", "display"],
+                "default": "body",
+                "description": "Typography variant"
+            },
+            "size": {
+                "type": "string",
+                "options": ["4XS", "3XS", "2XS", "XS", "S", "M", "L", "XL", "2XL"],
+                "default": "M",
+                "description": "Text size"
+            },
+            "weight": {
+                "type": "string",
+                "options": ["low", "medium", "high"],
+                "default": "medium",
+                "description": "Font weight"
+            },
+            "attention": {
+                "type": "string",
+                "options": ["low", "medium", "high"],
+                "default": "high",
+                "description": "Visual emphasis"
+            },
+            "appearance": {
+                "type": "string",
+                "options": ["neutral", "primary", "secondary", "sparkle", "positive", "negative", "warning", "informative"],
+                "default": "neutral",
+                "description": "Semantic appearance"
+            },
+            "textAlign": {
+                "type": "string",
+                "options": ["left", "center", "right"],
+                "default": "left",
+                "description": "Text alignment"
+            },
+            "maxLines": {
+                "type": "number",
+                "description": "Max lines before truncation"
+            },
+            "strikethrough": {
+                "type": "boolean",
+                "default": False,
+                "description": "Strikethrough decoration"
+            },
+            "italic": {
+                "type": "boolean",
+                "default": False,
+                "description": "Italic style"
+            },
+            "underline": {
+                "type": "boolean",
+                "default": False,
+                "description": "Underline decoration"
+            }
+        },
+        "code_example": """import { Text } from '@jds/core';
+
+<Text
+  text="Hello World"
+  variant="headline"
+  size="L"
+  weight="high"
+  appearance="primary"
 />"""
     }
 }
