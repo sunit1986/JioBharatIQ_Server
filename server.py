@@ -17,11 +17,16 @@ MCP Protocol: JSON-RPC 2.0 over stdio
 """
 
 import json
+import os
 import re
 import sys
 from knowledge_base import (
     COMPONENTS, TOKENS, ICON_CATEGORIES, ICONS_SEARCHABLE, FIGMA_REFERENCES
 )
+
+# Assets directory (relative to this script)
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+ASSETS_DIR = os.path.join(SCRIPT_DIR, "assets")
 
 
 # ============================================================================
@@ -278,6 +283,71 @@ def find_icon(query: str, limit: int = 10) -> dict:
     })
 
 
+def get_assets(asset_type: str = "all") -> dict:
+    """Get JDS asset file paths for prototyping. Returns actual paths so they can be copied into projects."""
+    asset_type = sanitize_input(asset_type).lower()
+
+    asset_map = {
+        "fonts": {
+            "dir": os.path.join(ASSETS_DIR, "fonts"),
+            "description": "JioType font family",
+            "usage_css": "@font-face { font-family: 'JioType'; src: url('./fonts/JioTypeVarW05-Regular.woff2') format('woff2'); }",
+            "subfolders": {}
+        },
+        "animations": {
+            "dir": os.path.join(ASSETS_DIR, "animations"),
+            "description": "HelloJio animation assets",
+            "usage_html": '<video src="./animations/HelloJio_Listening_241.mp4" autoplay loop muted></video>',
+            "files": []
+        },
+        "icons": {
+            "dir": os.path.join(ASSETS_DIR, "icons"),
+            "description": "JDS icon components (.jsx)",
+            "usage_jsx": "import { IcSearch } from './icons/IcSearch';",
+            "files": []
+        }
+    }
+
+    if asset_type not in ("all", "fonts", "animations", "icons"):
+        return {
+            "error": "Unknown asset type",
+            "available_types": ["all", "fonts", "animations", "icons"]
+        }
+
+    result = {"assets_root": ASSETS_DIR, "types": {}}
+
+    types_to_include = [asset_type] if asset_type != "all" else ["fonts", "animations", "icons"]
+
+    for atype in types_to_include:
+        info = asset_map[atype]
+        entry = {"description": info["description"], "dir": info["dir"], "files": []}
+
+        # Add usage hints
+        for key in ("usage_css", "usage_html", "usage_jsx"):
+            if key in info:
+                entry[key] = info[key]
+
+        # List actual files
+        target_dir = info["dir"]
+        if os.path.isdir(target_dir):
+            for root, dirs, files in os.walk(target_dir):
+                for f in sorted(files):
+                    if not f.startswith("."):
+                        full_path = os.path.join(root, f)
+                        rel_path = os.path.relpath(full_path, ASSETS_DIR)
+                        entry["files"].append({
+                            "name": f,
+                            "path": full_path,
+                            "relative": rel_path
+                        })
+
+        entry["count"] = len(entry["files"])
+        result["types"][atype] = entry
+
+    result["copy_instruction"] = f"Copy assets to your project: cp -r {ASSETS_DIR}/ your-project/assets/"
+    return result
+
+
 def get_figma_reference(design_name: str) -> dict:
     """Get Figma node references."""
     design_name = sanitize_input(design_name)
@@ -358,6 +428,20 @@ TOOLS = [
                 }
             },
             "required": ["query"]
+        }
+    },
+    {
+        "name": "get_assets",
+        "description": "Get JDS asset file paths for prototyping — fonts (JioType TTF/WOFF2), animations (HelloJio mp4s), icons (73 JSX components). Returns full paths and copy instructions. ALWAYS call this when building a prototype to get the correct asset paths.",
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "asset_type": {
+                    "type": "string",
+                    "description": "Asset type: 'all', 'fonts', 'animations', 'icons' (default: 'all')",
+                    "default": "all"
+                }
+            }
         }
     },
     {
@@ -453,7 +537,7 @@ def handle_request(request: dict) -> dict:
         # SECURITY: Whitelist tool names
         allowed_tools = {
             "lookup_component", "resolve_token",
-            "find_icon", "get_figma_reference"
+            "find_icon", "get_figma_reference", "get_assets"
         }
         if tool_name not in allowed_tools:
             return {
@@ -477,6 +561,20 @@ def handle_request(request: dict) -> dict:
                 )
             elif tool_name == "get_figma_reference":
                 result = get_figma_reference(args.get("design_name", ""))
+            elif tool_name == "get_assets":
+                result = get_assets(args.get("asset_type", "all"))
+                # NOTE: get_assets intentionally skips sanitize_output
+                # because returning file paths IS its purpose
+                return {
+                    "jsonrpc": "2.0",
+                    "id": request_id,
+                    "result": {
+                        "content": [{
+                            "type": "text",
+                            "text": json.dumps(result, indent=2)
+                        }]
+                    }
+                }
 
             return {
                 "jsonrpc": "2.0",
