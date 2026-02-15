@@ -513,8 +513,8 @@ def handle_request(request: dict) -> dict:
                     "tools": {}
                 },
                 "serverInfo": {
-                    "name": "JioBharatIQ_v1.1",
-                    "version": "1.1.0"
+                    "name": "JioBharatIQ_v1.2",
+                    "version": "1.2.0"
                 },
                 "instructions": (
                     "You are connected to the JDS (Jio Design System) knowledge server. "
