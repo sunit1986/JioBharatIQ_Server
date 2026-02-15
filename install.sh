@@ -1,6 +1,6 @@
 #!/bin/bash
 # ============================================================
-#  JDS Knowledge Server — One-Click Installer
+#  JioBharatIQ Server — One-Click Installer
 #  Just run: ./install.sh
 # ============================================================
 
@@ -12,9 +12,11 @@ RED='\033[0;31m'
 BOLD='\033[1m'
 NC='\033[0m'
 
+SERVER_NAME="JioBharatIQ"
+
 echo ""
 echo -e "${BOLD}============================================${NC}"
-echo -e "${BOLD}  JDS Knowledge Server — Installing...${NC}"
+echo -e "${BOLD}  ${SERVER_NAME} Server — Installing...${NC}"
 echo -e "${BOLD}============================================${NC}"
 echo ""
 
@@ -38,61 +40,96 @@ echo -e "${GREEN}✓${NC} Server found: ${SERVER_PATH}"
 # 3. Make server executable
 chmod +x "$SERVER_PATH"
 
-# 4. Detect Claude Desktop config location
+# ============================================================
+# 4. Configure Claude Desktop
+# ============================================================
 if [[ "$OSTYPE" == "darwin"* ]]; then
-    CONFIG_DIR="$HOME/Library/Application Support/Claude"
+    CLAUDE_CONFIG_DIR="$HOME/Library/Application Support/Claude"
 elif [[ "$OSTYPE" == "linux-gnu"* ]]; then
-    CONFIG_DIR="$HOME/.config/Claude"
+    CLAUDE_CONFIG_DIR="$HOME/.config/Claude"
 else
-    CONFIG_DIR="$APPDATA/Claude"
+    CLAUDE_CONFIG_DIR="$APPDATA/Claude"
 fi
 
-CONFIG_FILE="${CONFIG_DIR}/claude_desktop_config.json"
+CLAUDE_CONFIG="${CLAUDE_CONFIG_DIR}/claude_desktop_config.json"
+mkdir -p "$CLAUDE_CONFIG_DIR"
 
-# 5. Create config dir if needed
-mkdir -p "$CONFIG_DIR"
-
-# 6. Update or create Claude Desktop config
-if [ -f "$CONFIG_FILE" ]; then
-    # Config exists — check if it already has mcpServers
+if [ -f "$CLAUDE_CONFIG" ]; then
     if python3 -c "
-import json, sys
-with open('${CONFIG_FILE}', 'r') as f:
+import json
+with open('${CLAUDE_CONFIG}', 'r') as f:
     config = json.load(f)
 if 'mcpServers' not in config:
     config['mcpServers'] = {}
-config['mcpServers']['jds-knowledge'] = {
+config['mcpServers']['${SERVER_NAME}'] = {
     'command': 'python3',
     'args': ['${SERVER_PATH}']
 }
-with open('${CONFIG_FILE}', 'w') as f:
+with open('${CLAUDE_CONFIG}', 'w') as f:
     json.dump(config, f, indent=2)
 print('updated')
 " 2>/dev/null; then
-        echo -e "${GREEN}✓${NC} Claude Desktop config updated"
+        echo -e "${GREEN}✓${NC} Claude Desktop configured"
     else
-        echo -e "${YELLOW}⚠${NC} Could not auto-update config. Adding manually..."
-        # Fallback: write fresh config preserving nothing
         python3 -c "
 import json
-config = {'mcpServers': {'jds-knowledge': {'command': 'python3', 'args': ['${SERVER_PATH}']}}}
-with open('${CONFIG_FILE}', 'w') as f:
+config = {'mcpServers': {'${SERVER_NAME}': {'command': 'python3', 'args': ['${SERVER_PATH}']}}}
+with open('${CLAUDE_CONFIG}', 'w') as f:
     json.dump(config, f, indent=2)
 "
-        echo -e "${GREEN}✓${NC} Claude Desktop config created"
+        echo -e "${GREEN}✓${NC} Claude Desktop configured (fresh)"
     fi
 else
-    # No config file — create one
     python3 -c "
 import json
-config = {'mcpServers': {'jds-knowledge': {'command': 'python3', 'args': ['${SERVER_PATH}']}}}
-with open('${CONFIG_FILE}', 'w') as f:
+config = {'mcpServers': {'${SERVER_NAME}': {'command': 'python3', 'args': ['${SERVER_PATH}']}}}
+with open('${CLAUDE_CONFIG}', 'w') as f:
     json.dump(config, f, indent=2)
 "
-    echo -e "${GREEN}✓${NC} Claude Desktop config created"
+    echo -e "${GREEN}✓${NC} Claude Desktop configured"
 fi
 
-# 7. Run quick test
+# ============================================================
+# 5. Configure Cursor (if installed)
+# ============================================================
+CURSOR_CONFIG="$HOME/.cursor/mcp.json"
+
+if [ -d "$HOME/.cursor" ]; then
+    if [ -f "$CURSOR_CONFIG" ]; then
+        if python3 -c "
+import json
+with open('${CURSOR_CONFIG}', 'r') as f:
+    config = json.load(f)
+if 'mcpServers' not in config:
+    config['mcpServers'] = {}
+config['mcpServers']['${SERVER_NAME}'] = {
+    'command': 'python3',
+    'args': ['${SERVER_PATH}']
+}
+with open('${CURSOR_CONFIG}', 'w') as f:
+    json.dump(config, f, indent=2)
+print('updated')
+" 2>/dev/null; then
+            echo -e "${GREEN}✓${NC} Cursor configured"
+        else
+            echo -e "${YELLOW}⚠${NC} Could not update Cursor config — add manually"
+        fi
+    else
+        python3 -c "
+import json
+config = {'mcpServers': {'${SERVER_NAME}': {'command': 'python3', 'args': ['${SERVER_PATH}']}}}
+with open('${CURSOR_CONFIG}', 'w') as f:
+    json.dump(config, f, indent=2)
+"
+        echo -e "${GREEN}✓${NC} Cursor configured"
+    fi
+else
+    echo -e "${YELLOW}—${NC} Cursor not found (skipped)"
+fi
+
+# ============================================================
+# 6. Run quick test
+# ============================================================
 echo ""
 echo -e "${BOLD}Running tests...${NC}"
 if python3 "${SCRIPT_DIR}/test_server.py" > /dev/null 2>&1; then
@@ -101,13 +138,15 @@ else
     echo -e "${YELLOW}⚠${NC} Some tests failed — server may still work"
 fi
 
-# 8. Done!
+# ============================================================
+# 7. Done!
+# ============================================================
 echo ""
 echo -e "${BOLD}${GREEN}============================================${NC}"
 echo -e "${BOLD}${GREEN}  INSTALLED SUCCESSFULLY!${NC}"
 echo -e "${BOLD}${GREEN}============================================${NC}"
 echo ""
-echo -e "  ${BOLD}Next step:${NC} Restart Claude Desktop"
+echo -e "  ${BOLD}Next step:${NC} Restart Claude Desktop / Cursor"
 echo ""
 echo -e "  Then ask Claude:"
 echo -e "  ${YELLOW}\"Look up the Button component\"${NC}"
