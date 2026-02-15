@@ -47,6 +47,46 @@ communication, media, navigation, action, content, device, image, file, social, 
 
 homepage, menu, chat_page, media_page, assistants_page, tools_page, oneui_design_kit, jio_testlab, chat_input
 
+## Bundled Assets (ready to use)
+
+Everything you need for prototyping is included in `assets/`:
+
+```
+assets/
+  fonts/
+    ttf/          18 JioType fonts (variable + all weights)
+    woff2/        18 JioType web fonts (for web projects)
+  animations/
+    HelloJio_Breath(IdleState)_241.mp4   (idle animation)
+    HelloJio_Listening_241.mp4           (listening animation)
+  icons/          73 JDS icon components (.jsx)
+```
+
+### Using fonts in your prototype
+
+**CSS/HTML:**
+```css
+@font-face {
+  font-family: 'JioType';
+  src: url('./assets/fonts/woff2/JioTypeVarW05-Regular.woff2') format('woff2'),
+       url('./assets/fonts/ttf/JioTypeVar.ttf') format('truetype');
+}
+```
+
+**Copy to project:** `cp -r assets/fonts/ttf/ your-project/fonts/`
+
+### Using animations
+
+```html
+<video src="./assets/animations/HelloJio_Listening_241.mp4" autoplay loop muted></video>
+```
+
+### Using icons
+
+```jsx
+import { IcSearch } from './assets/icons/IcSearch';
+```
+
 ## Security
 
 - JSON-only responses, no internal reasoning exposed

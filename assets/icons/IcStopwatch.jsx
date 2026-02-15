@@ -1,0 +1,15 @@
+import React from 'react';
+import RnSvg, { G, Rect, Path, Defs, ClipPath } from 'react-native-svg';
+
+export const IcStopwatch = (props) => {
+  return (<RnSvg
+      viewBox="0 0 24 24"
+      fill="none"
+      {...props}
+    ><Path
+      d="M10 4h4a1 1 0 100-2h-4a1 1 0 000 2zm8.71 2.71a1 1 0 101.41-1.42l-1.41-1.41a1 1 0 10-1.42 1.41l1.42 1.42zM12 5a8.5 8.5 0 108.5 8.5A8.51 8.51 0 0012 5zm1 8a1 1 0 01-2 0V9a1 1 0 012 0v4z"
+      fill="currentColor"
+    >
+    </Path>
+    </RnSvg>);
+};

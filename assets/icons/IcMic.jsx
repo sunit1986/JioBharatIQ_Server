@@ -1,0 +1,14 @@
+import React from 'react';
+import RnSvg, { G, Rect, Path, Defs, ClipPath } from 'react-native-svg';
+
+export const IcMic = (props) => {
+  return (<RnSvg
+      viewBox="0 0 24 24"
+      fill="none"
+      {...props}
+    ><Path
+      d="M12 15a3 3 0 003-3V5a3 3 0 00-6 0v7a3 3 0 003 3zm6-5a1 1 0 00-1 1v1a5 5 0 11-10 0v-1a1 1 0 10-2 0v1a7 7 0 1014 0v-1a1 1 0 00-1-1zm-3 10H9a1 1 0 000 2h6a1 1 0 000-2z"
+      fill="currentColor"
+     />
+    </RnSvg>);
+};
