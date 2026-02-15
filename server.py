@@ -508,11 +508,13 @@ def handle_request(request: dict) -> dict:
                     "When building any prototype or UI:\n"
                     "1. ALWAYS call get_assets FIRST to get font, icon, and animation file paths. "
                     "Copy the needed assets into the project from the returned paths.\n"
-                    "2. Use JioType font family (woff2 for web, ttf for native) — never use system fonts.\n"
+                    "2. Use JioType font family (woff2 for web, ttf for native) — NEVER use system fonts like Inter, Arial, Helvetica, or sans-serif.\n"
                     "3. Call lookup_component before implementing any JDS component.\n"
-                    "4. Call resolve_token for colors, typography, spacing — never hardcode values.\n"
+                    "4. Call resolve_token for colors, typography, spacing — NEVER hardcode values.\n"
                     "5. Use JDS icon components from assets/icons/ (e.g. IcSearch, IcChat, IcMic).\n"
-                    "6. Use HelloJio animations from assets/animations/ for assistant/AI states."
+                    "6. Use HelloJio animations from assets/animations/ for assistant/AI states.\n"
+                    "7. NEVER use emojis anywhere in the UI — use JDS icons from assets/icons/ instead.\n"
+                    "8. NEVER use placeholder or dummy assets — always use real JDS assets from get_assets."
                 )
             }
         }
