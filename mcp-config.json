@@ -1,6 +1,6 @@
 {
   "mcpServers": {
-    "JioBharatIQ_v1.2": {
+    "JioBharatIQ_v1.3": {
       "command": "python3",
       "args": [
         "/REPLACE/WITH/YOUR/PATH/jds-knowledge-server/server.py"

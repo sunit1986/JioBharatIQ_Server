@@ -18,7 +18,7 @@ cd JioBharatIQ_Server && ./uninstall.sh
 
 ## What you get
 
-4 tools inside Claude Desktop:
+5 tools inside Claude Desktop / Cursor:
 
 | Ask Claude... | Tool used |
 |--------------|-----------|
@@ -26,6 +26,7 @@ cd JioBharatIQ_Server && ./uninstall.sh
 | "What's primary-50 color?" | `resolve_token` |
 | "Find a calendar icon" | `find_icon` |
 | "Where's the homepage Figma?" | `get_figma_reference` |
+| "Get assets for my project" | `get_assets` (pass `project_dir` for auto copy commands) |
 
 ## 21 Components
 
