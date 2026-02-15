@@ -12,7 +12,8 @@ RED='\033[0;31m'
 BOLD='\033[1m'
 NC='\033[0m'
 
-SERVER_NAME="JioBharatIQ"
+SERVER_VERSION="v1.1"
+SERVER_NAME="JioBharatIQ_${SERVER_VERSION}"
 
 echo ""
 echo -e "${BOLD}============================================${NC}"

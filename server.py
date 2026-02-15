@@ -500,8 +500,8 @@ def handle_request(request: dict) -> dict:
                     "tools": {}
                 },
                 "serverInfo": {
-                    "name": "jds-knowledge-server",
-                    "version": "1.0.0"
+                    "name": "JioBharatIQ_v1.1",
+                    "version": "1.1.0"
                 },
                 "instructions": (
                     "You are connected to the JDS (Jio Design System) knowledge server. "

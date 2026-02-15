@@ -6,7 +6,8 @@ set -e
 GREEN='\033[0;32m'
 NC='\033[0m'
 
-SERVER_NAME="JioBharatIQ"
+SERVER_VERSION="v1.1"
+SERVER_NAME="JioBharatIQ_${SERVER_VERSION}"
 
 # Remove from Claude Desktop
 if [[ "$OSTYPE" == "darwin"* ]]; then
