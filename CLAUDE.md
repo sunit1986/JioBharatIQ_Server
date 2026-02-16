@@ -3,8 +3,8 @@
 When building any prototype or UI in this repo:
 
 MANDATORY — do these FIRST before writing any code:
-1. Call the `get_assets` MCP tool to get JDS asset file paths
-2. Copy the needed fonts, icons, and animations into the project from the returned paths
+1. Call the `get_assets` MCP tool to get GitHub-hosted CDN URLs for JDS assets
+2. Use the cdn_url values directly in your HTML src/url attributes — no file copying needed
 
 FONTS:
 3. Use JioType font family ONLY (load from assets/fonts/woff2/ for web or assets/fonts/ttf/ for native)

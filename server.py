@@ -22,7 +22,7 @@ import re
 import sys
 import urllib.request
 
-SERVER_VERSION = "2.1.0"
+SERVER_VERSION = "2.2.0"
 
 # ============================================================================
 # AUTO-UPDATE: fetch latest files from GitHub on every startup
@@ -149,11 +149,11 @@ def sanitize_output(obj):
 
 TOOL_REMINDER = (
     "\n\n---\n"
-    "REMINDER: (1) BEFORE writing any HTML/code, call get_assets with your project_dir and RUN the copy command it returns. "
+    "REMINDER: (1) Call get_assets FIRST to get GitHub-hosted CDN URLs for all JDS assets. "
     "(2) Use JioType font ONLY — never system fonts. "
     "(3) Use JDS icons from assets/icons/ — NEVER use emojis. "
     "(4) Call resolve_token for colors/spacing — never hardcode. "
-    "(5) Use ONLY the relative paths from get_assets response in your HTML src/url attributes."
+    "(5) Use the cdn_url paths from get_assets response directly in your HTML src/url attributes — no file copying needed."
 )
 
 
@@ -338,39 +338,87 @@ def find_icon(query: str, limit: int = 10) -> dict:
 
 
 def get_assets(asset_type: str = "all", project_dir: str = "") -> dict:
-    """Get JDS asset file paths for prototyping. Returns actual paths, relative paths for HTML,
-    and ready-to-run copy commands. Pass project_dir to get project-specific copy commands."""
+    """Get JDS asset CDN URLs for prototyping. Returns GitHub-hosted URLs that work
+    directly in HTML — no file copying required."""
     asset_type = sanitize_input(asset_type).lower()
     project_dir = sanitize_input(project_dir).strip()
 
+    cdn_base = f"{_REPO_BASE}/assets"
+
+    # Hardcoded manifest of all known asset files
+    _FONT_FILES = [
+        "JioTypeVarSubsetW05-Italic.woff2", "JioTypeVarSubsetW05-Regular.woff2",
+        "JioTypeVarW05-Italic.woff2", "JioTypeVarW05-Regular.woff2",
+        "JioTypeW05-Black.woff2", "JioTypeW05-BlackItalic.woff2",
+        "JioTypeW05-Bold.woff2", "JioTypeW05-BoldItalic.woff2",
+        "JioTypeW05-ExtraBlack.woff2", "JioTypeW05-ExtraBlackItalic.woff2",
+        "JioTypeW05-Hairline.woff2", "JioTypeW05-HairlineItalic.woff2",
+        "JioTypeW05-Italic.woff2", "JioTypeW05-Light.woff2",
+        "JioTypeW05-LightItalic.woff2", "JioTypeW05-Medium.woff2",
+        "JioTypeW05-MediumItalic.woff2", "JioTypeW05-Regular.woff2",
+    ]
+    _ANIMATION_FILES = [
+        "HelloJio_Breath(IdleState)_241.mp4", "HelloJio_Listening_241.mp4",
+    ]
+    _ICON_FILES = [
+        "IcAccessibility.jsx", "IcAdd.jsx", "IcAlarm.jsx", "IcAlbum.jsx",
+        "IcArrowBack.jsx", "IcBack.jsx", "IcBrain.jsx", "IcBurgerMenu.jsx",
+        "IcCalendar.jsx", "IcCalendarEvent.jsx", "IcCalendarWeek.jsx",
+        "IcCart.jsx", "IcChat.jsx", "IcChevronDown.jsx", "IcChevronLeft.jsx",
+        "IcChevronRight.jsx", "IcChevronUp.jsx", "IcClose.jsx",
+        "IcCloseRemove.jsx", "IcConfirm.jsx", "IcCopy.jsx",
+        "IcCopyDocument.jsx", "IcDislike.jsx", "IcDocument.jsx",
+        "IcDownload.jsx", "IcEditPen.jsx", "IcError.jsx", "IcFavorite.jsx",
+        "IcFilterMultiple.jsx", "IcFirstpage.jsx", "IcHomeConnection.jsx",
+        "IcInfo.jsx", "IcJioDot.jsx", "IcLanguage.jsx", "IcLastpage.jsx",
+        "IcLike.jsx", "IcList.jsx", "IcMic.jsx", "IcMicOff.jsx",
+        "IcMinus.jsx", "IcMoreHorizontal.jsx", "IcNext.jsx",
+        "IcNightClear.jsx", "IcNotification.jsx", "IcPause.jsx",
+        "IcPhotoCamera.jsx", "IcPlay.jsx", "IcProfile.jsx", "IcRefresh.jsx",
+        "IcRepeat.jsx", "IcSearch.jsx", "IcSendMessage.jsx",
+        "IcSettings.jsx", "IcShare.jsx", "IcStar.jsx", "IcStop.jsx",
+        "IcStopwatch.jsx", "IcSuccess.jsx", "IcSunnyClear.jsx",
+        "IcTask.jsx", "IcText.jsx", "IcTheme.jsx", "IcTime.jsx",
+        "IcTrash.jsx", "IcUpload.jsx", "IcVoice.jsx", "IcWarning.jsx",
+        "IcWidgets.jsx", "IcWifiOff.jsx", "PsJioMart.jsx", "WmJiomart.jsx",
+        "icon.tsx", "map.js",
+    ]
+
+    font_cdn = f"{cdn_base}/fonts/woff2"
+    anim_cdn = f"{cdn_base}/animations"
+    icon_cdn = f"{cdn_base}/icons"
+
     asset_map = {
         "fonts": {
-            "dir": os.path.join(ASSETS_DIR, "fonts"),
-            "description": "JioType font family",
-            "html_relative_path": "assets/fonts/woff2/",
+            "description": "JioType font family (WOFF2 for web)",
+            "cdn_base": font_cdn,
             "usage_css": (
-                "@font-face { font-family: 'JioType'; font-weight: 400; "
-                "src: url('assets/fonts/woff2/JioTypeVarW05-Regular.woff2') format('woff2'); }\n"
-                "@font-face { font-family: 'JioType'; font-weight: 500; "
-                "src: url('assets/fonts/woff2/JioTypeW05-Medium.woff2') format('woff2'); }\n"
-                "@font-face { font-family: 'JioType'; font-weight: 700; "
-                "src: url('assets/fonts/woff2/JioTypeW05-Bold.woff2') format('woff2'); }"
+                f"@font-face {{ font-family: 'JioType'; font-weight: 400; "
+                f"src: url('{font_cdn}/JioTypeVarW05-Regular.woff2') format('woff2'); }}\n"
+                f"@font-face {{ font-family: 'JioType'; font-weight: 500; "
+                f"src: url('{font_cdn}/JioTypeW05-Medium.woff2') format('woff2'); }}\n"
+                f"@font-face {{ font-family: 'JioType'; font-weight: 700; "
+                f"src: url('{font_cdn}/JioTypeW05-Bold.woff2') format('woff2'); }}"
             ),
+            "files": [{"name": f, "cdn_url": f"{font_cdn}/{f}"} for f in _FONT_FILES],
         },
         "animations": {
-            "dir": os.path.join(ASSETS_DIR, "animations"),
-            "description": "HelloJio animation assets",
-            "html_relative_path": "assets/animations/",
+            "description": "HelloJio animation assets (MP4)",
+            "cdn_base": anim_cdn,
             "usage_html": (
-                '<video src="assets/animations/HelloJio_Breath(IdleState)_241.mp4" autoplay loop muted playsinline></video>\n'
-                '<video src="assets/animations/HelloJio_Listening_241.mp4" autoplay loop muted playsinline></video>'
+                f'<video src="{anim_cdn}/HelloJio_Breath(IdleState)_241.mp4" autoplay loop muted playsinline></video>\n'
+                f'<video src="{anim_cdn}/HelloJio_Listening_241.mp4" autoplay loop muted playsinline></video>'
             ),
+            "files": [{"name": f, "cdn_url": f"{anim_cdn}/{f}"} for f in _ANIMATION_FILES],
         },
         "icons": {
-            "dir": os.path.join(ASSETS_DIR, "icons"),
-            "description": "JDS icon components (.jsx)",
-            "html_relative_path": "assets/icons/",
-            "usage_jsx": "import { IcSearch } from './assets/icons/IcSearch';",
+            "description": "JDS icon components (71 JSX + icon.tsx + map.js)",
+            "cdn_base": icon_cdn,
+            "usage_note": (
+                "Icons are React Native SVG components (.jsx). For HTML prototypes, "
+                "fetch the JSX file and extract the <Path d='...' /> data to inline as SVG."
+            ),
+            "files": [{"name": f, "cdn_url": f"{icon_cdn}/{f}"} for f in _ICON_FILES],
         }
     }
 
@@ -380,7 +428,7 @@ def get_assets(asset_type: str = "all", project_dir: str = "") -> dict:
             "available_types": ["all", "fonts", "animations", "icons"]
         }
 
-    result = {"assets_root": ASSETS_DIR, "types": {}}
+    result = {"cdn_base": cdn_base, "types": {}}
 
     types_to_include = [asset_type] if asset_type != "all" else ["fonts", "animations", "icons"]
 
@@ -388,60 +436,20 @@ def get_assets(asset_type: str = "all", project_dir: str = "") -> dict:
         info = asset_map[atype]
         entry = {
             "description": info["description"],
-            "source_dir": info["dir"],
-            "html_relative_path": info["html_relative_path"],
-            "files": []
+            "cdn_base": info["cdn_base"],
+            "files": info["files"],
+            "count": len(info["files"]),
         }
-
         # Add usage hints
-        for key in ("usage_css", "usage_html", "usage_jsx"):
+        for key in ("usage_css", "usage_html", "usage_note"):
             if key in info:
                 entry[key] = info[key]
-
-        # List actual files
-        target_dir = info["dir"]
-        if os.path.isdir(target_dir):
-            for root, dirs, files in os.walk(target_dir):
-                for f in sorted(files):
-                    if not f.startswith("."):
-                        full_path = os.path.join(root, f)
-                        rel_from_assets = os.path.relpath(full_path, ASSETS_DIR)
-                        entry["files"].append({
-                            "name": f,
-                            "source_path": full_path,
-                            "html_relative": f"assets/{rel_from_assets}"
-                        })
-
-        entry["count"] = len(entry["files"])
         result["types"][atype] = entry
 
-    # Generate copy commands
-    if project_dir:
-        target = os.path.join(project_dir, "assets")
-        result["copy_commands"] = [
-            f"mkdir -p '{target}/fonts/woff2' '{target}/animations' '{target}/icons'",
-            f"cp -r {ASSETS_DIR}/fonts/woff2/ '{target}/fonts/woff2/'",
-            f"cp -r {ASSETS_DIR}/animations/ '{target}/animations/'",
-            f"cp -r {ASSETS_DIR}/icons/ '{target}/icons/'"
-        ]
-        result["copy_instruction"] = (
-            f"MANDATORY: Run these commands BEFORE writing any HTML:\n"
-            + "\n".join(result["copy_commands"])
-        )
-    else:
-        result["copy_commands"] = [
-            f"cp -r {ASSETS_DIR}/ <YOUR_PROJECT_DIR>/assets/"
-        ]
-        result["copy_instruction"] = (
-            f"MANDATORY: Copy assets into your project BEFORE writing any HTML.\n"
-            f"Run: cp -r {ASSETS_DIR}/ <YOUR_PROJECT_DIR>/assets/\n"
-            f"TIP: Pass project_dir parameter to get exact copy commands for your project."
-        )
-
     result["IMPORTANT"] = (
-        "You MUST physically copy these files into the project directory BEFORE generating any HTML. "
-        "The HTML must use relative paths (e.g. assets/fonts/woff2/JioTypeVarW05-Regular.woff2). "
-        "These relative paths will ONLY work if the files are actually present in the project's assets/ folder."
+        "Assets are served from GitHub CDN. Use the cdn_url values DIRECTLY in your HTML "
+        "src and url() attributes. NO file copying is needed. Example: "
+        f"src='{font_cdn}/JioTypeVarW05-Regular.woff2'"
     )
     return result
 
@@ -530,7 +538,7 @@ TOOLS = [
     },
     {
         "name": "get_assets",
-        "description": "Get JDS asset paths and COPY COMMANDS for prototyping. Returns fonts (JioType WOFF2), animations (HelloJio MP4s), icons (73 JSX). MANDATORY: Call this FIRST when building any prototype. Pass project_dir to get ready-to-run copy commands. You MUST run the copy commands BEFORE writing HTML.",
+        "description": f"[JioBharatIQ v{SERVER_VERSION}] Get JDS asset CDN URLs for prototyping. Returns GitHub-hosted URLs for fonts (JioType WOFF2), animations (HelloJio MP4s), icons (73 JSX). MANDATORY: Call this FIRST when building any prototype. Use the cdn_url values directly in HTML — no file copying needed.",
         "inputSchema": {
             "type": "object",
             "properties": {
@@ -541,7 +549,7 @@ TOOLS = [
                 },
                 "project_dir": {
                     "type": "string",
-                    "description": "Absolute path to the project directory where HTML will be generated. The tool will return exact copy commands to place assets in <project_dir>/assets/. ALWAYS provide this."
+                    "description": "(Optional, unused) Previously used for local copy commands. Assets are now served via GitHub CDN."
                 }
             }
         }
@@ -612,18 +620,15 @@ def handle_request(request: dict) -> dict:
                 "instructions": (
                     f"You are connected to the JDS (Jio Design System) knowledge server v{SERVER_VERSION}. "
                     "When building any prototype or UI:\n"
-                    "1. ALWAYS call get_assets FIRST with project_dir set to the directory where your HTML will live. "
-                    "Then EXECUTE the copy_commands it returns to physically copy assets into the project. "
-                    "DO NOT skip this step — HTML relative paths will break without the actual files.\n"
-                    "2. Use ONLY the html_relative paths from get_assets in your HTML src/url attributes "
-                    "(e.g. assets/fonts/woff2/JioTypeVarW05-Regular.woff2, assets/animations/HelloJio_Breath(IdleState)_241.mp4).\n"
-                    "3. Use JioType font family (woff2 for web, ttf for native) — NEVER use system fonts like Inter, Arial, Helvetica, or sans-serif.\n"
-                    "4. Call lookup_component before implementing any JDS component.\n"
-                    "5. Call resolve_token for colors, typography, spacing — NEVER hardcode values.\n"
-                    "6. Use JDS icon components from assets/icons/ (e.g. IcSearch, IcChat, IcMic).\n"
-                    "7. Use HelloJio animations from assets/animations/ for assistant/AI states.\n"
-                    "8. NEVER use emojis anywhere in the UI — use JDS icons from assets/icons/ instead.\n"
-                    "9. NEVER use placeholder or dummy assets — always use real JDS assets from get_assets."
+                    "1. ALWAYS call get_assets FIRST to get GitHub-hosted CDN URLs for all JDS assets. "
+                    "Use the cdn_url values DIRECTLY in your HTML src and url() attributes — no file copying needed.\n"
+                    "2. Use JioType font family (woff2 for web, ttf for native) — NEVER use system fonts like Inter, Arial, Helvetica, or sans-serif.\n"
+                    "3. Call lookup_component before implementing any JDS component.\n"
+                    "4. Call resolve_token for colors, typography, spacing — NEVER hardcode values.\n"
+                    "5. Use JDS icon components from assets/icons/ (e.g. IcSearch, IcChat, IcMic).\n"
+                    "6. Use HelloJio animations from assets/animations/ for assistant/AI states.\n"
+                    "7. NEVER use emojis anywhere in the UI — use JDS icons from assets/icons/ instead.\n"
+                    "8. NEVER use placeholder or dummy assets — always use real JDS assets from get_assets."
                 )
             }
         }
