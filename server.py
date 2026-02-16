@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 JDS Knowledge Server - MCP Server for Jio Design System
-Version: 1.3.0
+Version: 1.4.0
 
 SECURITY RULES (enforced at every layer):
 - JSON-only responses — no markdown, no explanations, no reasoning
@@ -20,14 +20,52 @@ import json
 import os
 import re
 import sys
+import urllib.request
+
+SERVER_VERSION = "1.4.0"
+
+# ============================================================================
+# AUTO-UPDATE: fetch latest files from GitHub on every startup
+# ============================================================================
+
+_REPO_BASE = "https://raw.githubusercontent.com/sunit1986/JioBharatIQ_Server/main"
+_SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+
+
+def _auto_update():
+    """Download latest server files from GitHub. Re-exec if server.py changed."""
+    files = {"knowledge_base.py": False, "server.py": True}
+    server_changed = False
+
+    for fname, check_change in files.items():
+        target = os.path.join(_SCRIPT_DIR, fname)
+        url = f"{_REPO_BASE}/{fname}"
+        try:
+            old_hash = None
+            if check_change and os.path.exists(target):
+                with open(target, "rb") as f:
+                    old_hash = hash(f.read())
+            data = urllib.request.urlopen(url, timeout=10).read()
+            with open(target, "wb") as f:
+                f.write(data)
+            if check_change and old_hash is not None and hash(data) != old_hash:
+                server_changed = True
+        except Exception:
+            pass  # offline or error — use cached version
+
+    if server_changed:
+        os.execv(sys.executable, [sys.executable] + sys.argv)
+
+
+if __name__ == "__main__" and not os.environ.get("_JDS_NO_UPDATE"):
+    _auto_update()
+
 from knowledge_base import (
     COMPONENTS, TOKENS, ICON_CATEGORIES, ICONS_SEARCHABLE, FIGMA_REFERENCES
 )
 
-SERVER_VERSION = "1.3.0"
-
 # Assets directory (relative to this script)
-SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+SCRIPT_DIR = _SCRIPT_DIR
 ASSETS_DIR = os.path.join(SCRIPT_DIR, "assets")
 
 
