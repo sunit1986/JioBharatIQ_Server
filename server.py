@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 JDS Knowledge Server - MCP Server for Jio Design System
-Version: 1.4.0
+Version: 2.0.0
 
 SECURITY RULES (enforced at every layer):
 - JSON-only responses — no markdown, no explanations, no reasoning
@@ -22,7 +22,7 @@ import re
 import sys
 import urllib.request
 
-SERVER_VERSION = "1.4.0"
+SERVER_VERSION = "2.0.0"
 
 # ============================================================================
 # AUTO-UPDATE: fetch latest files from GitHub on every startup
