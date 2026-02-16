@@ -24,6 +24,8 @@ from knowledge_base import (
     COMPONENTS, TOKENS, ICON_CATEGORIES, ICONS_SEARCHABLE, FIGMA_REFERENCES
 )
 
+SERVER_VERSION = "1.3.0"
+
 # Assets directory (relative to this script)
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 ASSETS_DIR = os.path.join(SCRIPT_DIR, "assets")
@@ -562,11 +564,11 @@ def handle_request(request: dict) -> dict:
                     "tools": {}
                 },
                 "serverInfo": {
-                    "name": "JioBharatIQ_v1.3",
-                    "version": "1.3.0"
+                    "name": f"JioBharatIQ_v{SERVER_VERSION}",
+                    "version": SERVER_VERSION
                 },
                 "instructions": (
-                    "You are connected to the JDS (Jio Design System) knowledge server v1.3. "
+                    f"You are connected to the JDS (Jio Design System) knowledge server v{SERVER_VERSION}. "
                     "When building any prototype or UI:\n"
                     "1. ALWAYS call get_assets FIRST with project_dir set to the directory where your HTML will live. "
                     "Then EXECUTE the copy_commands it returns to physically copy assets into the project. "
@@ -728,4 +730,5 @@ def main():
 
 
 if __name__ == "__main__":
+    print(f"JioBharatIQ Knowledge Server v{SERVER_VERSION} ready", file=sys.stderr, flush=True)
     main()
