@@ -22,7 +22,7 @@ import re
 import sys
 import urllib.request
 
-SERVER_VERSION = "2.0.0"
+SERVER_VERSION = "2.1.0"
 
 # ============================================================================
 # AUTO-UPDATE: fetch latest files from GitHub on every startup
@@ -591,8 +591,12 @@ def handle_request(request: dict) -> dict:
             "error": {"code": -32601, "message": "Method not found"}
         }
 
-    # Handle initialize
+    # Handle initialize — also trigger auto-update so long-running servers pick up changes
     if method == "initialize":
+        try:
+            _auto_update()
+        except Exception:
+            pass
         return {
             "jsonrpc": "2.0",
             "id": request_id,
