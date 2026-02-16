@@ -479,7 +479,7 @@ def get_figma_reference(design_name: str) -> dict:
 TOOLS = [
     {
         "name": "lookup_component",
-        "description": "Get JDS component specs: Button, Card, InputField, Modal, BottomSheet, Avatar, Tabs, Toast, Accordion, Divider, Badge, BottomNav, Container, Spinner, Skeleton, PromoCard, ServiceCard, ContentBlock, Carousel, RatingBar, Text",
+        "description": f"[JioBharatIQ v{SERVER_VERSION}] Get JDS component specs: Button, Card, InputField, Modal, BottomSheet, Avatar, Tabs, Toast, Accordion, Divider, Badge, BottomNav, Container, Spinner, Skeleton, PromoCard, ServiceCard, ContentBlock, Carousel, RatingBar, Text",
         "inputSchema": {
             "type": "object",
             "properties": {
