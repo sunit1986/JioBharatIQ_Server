@@ -2,19 +2,49 @@
 
 MCP server for Jio Design System — components, tokens, icons, Figma references.
 
-## Install (one command)
+## Install
+
+### One-time setup: install uv
 
 ```bash
-git clone https://github.com/sunit1986/JioBharatIQ_Server.git && cd JioBharatIQ_Server && ./install.sh
+curl -LsSf https://astral.sh/uv/install.sh | sh
 ```
 
-That's it. Restart Claude Desktop.
+### Configure your AI tool
 
-## Uninstall
+**Claude Desktop** — Settings > Developer > Edit Config:
+
+```json
+{
+  "mcpServers": {
+    "JioBharatIQ": {
+      "command": "uvx",
+      "args": ["jiobharatiq-server"]
+    }
+  }
+}
+```
+
+**Cursor** — Settings > MCP > Add Server:
+
+```json
+{
+  "mcpServers": {
+    "JioBharatIQ": {
+      "command": "uvx",
+      "args": ["jiobharatiq-server"]
+    }
+  }
+}
+```
+
+**Claude Code (CLI)**:
 
 ```bash
-cd JioBharatIQ_Server && ./uninstall.sh
+claude mcp add JioBharatIQ -- uvx jiobharatiq-server
 ```
+
+Restart the app. That's it.
 
 ## What you get
 
@@ -26,7 +56,7 @@ cd JioBharatIQ_Server && ./uninstall.sh
 | "What's primary-50 color?" | `resolve_token` |
 | "Find a calendar icon" | `find_icon` |
 | "Where's the homepage Figma?" | `get_figma_reference` |
-| "Get assets for my project" | `get_assets` (pass `project_dir` for auto copy commands) |
+| "Get assets for my project" | `get_assets` |
 
 ## 21 Components
 
@@ -40,7 +70,7 @@ Button, InputField, Card, Modal, BottomSheet, Avatar, Tabs, Toast, Accordion, Di
 - **border_radius** — none to pill (8 sizes)
 - **opacity** — invisible, disabled, enabled
 
-## 15 Icon Categories (1546 icons)
+## 1301 Icons (15 categories)
 
 communication, media, navigation, action, content, device, image, file, social, places, toggle, time, editor, commerce, hardware
 
@@ -48,45 +78,29 @@ communication, media, navigation, action, content, device, image, file, social, 
 
 homepage, menu, chat_page, media_page, assistants_page, tools_page, oneui_design_kit, jio_testlab, chat_input
 
-## Bundled Assets (ready to use)
+## Assets (GitHub CDN)
 
-Everything you need for prototyping is included in `assets/`:
+All assets served via GitHub CDN — no local files needed:
+- **Fonts**: 18 JioType weights (WOFF2 for web, TTF for native)
+- **Animations**: HelloJio idle + listening (MP4)
+- **Icons**: 71 JSX components + 1230 SVG icons
 
-```
-assets/
-  fonts/
-    ttf/          18 JioType fonts (variable + all weights)
-    woff2/        18 JioType web fonts (for web projects)
-  animations/
-    HelloJio_Breath(IdleState)_241.mp4   (idle animation)
-    HelloJio_Listening_241.mp4           (listening animation)
-  icons/          73 JDS icon components (.jsx)
-```
+## How updates work
 
-### Using fonts in your prototype
+New version published to PyPI → team gets it on next app restart. No action needed.
 
-**CSS/HTML:**
-```css
-@font-face {
-  font-family: 'JioType';
-  src: url('./assets/fonts/woff2/JioTypeVarW05-Regular.woff2') format('woff2'),
-       url('./assets/fonts/ttf/JioTypeVar.ttf') format('truetype');
-}
+Force immediate update:
+```bash
+uvx --upgrade jiobharatiq-server
 ```
 
-**Copy to project:** `cp -r assets/fonts/ttf/ your-project/fonts/`
+## Troubleshooting
 
-### Using animations
+**Tools not showing?** Restart the app after adding config.
 
-```html
-<video src="./assets/animations/HelloJio_Listening_241.mp4" autoplay loop muted></video>
-```
+**uvx not found?** Run `curl -LsSf https://astral.sh/uv/install.sh | sh` then restart your terminal.
 
-### Using icons
-
-```jsx
-import { IcSearch } from './assets/icons/IcSearch';
-```
+**Slow first run?** Normal — uvx downloads the package + Python runtime (~10 sec, cached after).
 
 ## Security
 
@@ -94,21 +108,7 @@ import { IcSearch } from './assets/icons/IcSearch';
 - Input sanitization + injection protection
 - No file paths or secrets in output
 - Method and tool whitelisting
-- 147 tests passing
-
-## Troubleshooting
-
-**Tools not showing?** Restart Claude Desktop after install.
-
-**Python not found?** Install from https://www.python.org/downloads/
-
-**Permission denied?** Run `chmod +x install.sh server.py`
-
-## Run tests
-
-```bash
-python3 test_server.py
-```
 
 ---
-Internal use only — Jio Design System | v1.0.0
+
+Jio Design System | v3.1.0

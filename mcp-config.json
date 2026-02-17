@@ -1,11 +1,8 @@
 {
   "mcpServers": {
-    "JioBharatIQ_v1.3": {
-      "command": "python3",
-      "args": [
-        "/REPLACE/WITH/YOUR/PATH/jds-knowledge-server/server.py"
-      ],
-      "description": "JDS Design System knowledge base with component specs, design tokens, icons, and Figma references"
+    "JioBharatIQ": {
+      "command": "uvx",
+      "args": ["jiobharatiq-server"]
     }
   }
 }
