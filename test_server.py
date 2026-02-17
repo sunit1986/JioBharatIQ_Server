@@ -56,6 +56,9 @@ def call_tool(tool_name: str, arguments: dict) -> dict:
     })
     if "result" in response and "content" in response["result"]:
         text = response["result"]["content"][0]["text"]
+        # Strip TOOL_REMINDER that gets appended after JSON
+        if "\n\n---\n" in text:
+            text = text[:text.index("\n\n---\n")]
         return json.loads(text)
     return response
 
@@ -97,7 +100,7 @@ def test_mcp_protocol():
     test("Initialize returns protocolVersion",
          resp.get("result", {}).get("protocolVersion") == "2024-11-05")
     test("Initialize returns serverInfo",
-         resp.get("result", {}).get("serverInfo", {}).get("name") == "jds-knowledge-server")
+         "JioBharatIQ" in resp.get("result", {}).get("serverInfo", {}).get("name", ""))
     test("Initialize returns tools capability",
          "tools" in resp.get("result", {}).get("capabilities", {}))
 
@@ -107,10 +110,10 @@ def test_mcp_protocol():
         "method": "tools/list", "params": {}
     })
     tools = resp.get("result", {}).get("tools", [])
-    test("tools/list returns 4 tools", len(tools) == 4)
+    test("tools/list returns 5 tools", len(tools) == 5)
     tool_names = {t["name"] for t in tools}
     test("All tool names present",
-         tool_names == {"lookup_component", "resolve_token", "find_icon", "get_figma_reference"})
+         tool_names == {"lookup_component", "resolve_token", "find_icon", "get_figma_reference", "get_assets"})
 
     # Each tool has inputSchema
     for tool in tools:
