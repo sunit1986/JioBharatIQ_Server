@@ -58,16 +58,28 @@ else
 fi
 
 # ============================================================
-# 3. Symlink uvx into /usr/local/bin (so GUI apps can find it)
+# 3. Symlink uv AND uvx into /usr/local/bin (so GUI apps can find them)
 # ============================================================
 if [[ "$OSTYPE" == "darwin"* ]]; then
+    UV_PATH=$(which uv)
     UVX_PATH=$(which uvx)
+    NEED_SUDO=false
+
+    if [ "$UV_PATH" != "/usr/local/bin/uv" ]; then
+        NEED_SUDO=true
+    fi
     if [ "$UVX_PATH" != "/usr/local/bin/uvx" ]; then
-        echo -e "${YELLOW}Making uvx visible to Claude Desktop...${NC}"
+        NEED_SUDO=true
+    fi
+
+    if [ "$NEED_SUDO" = true ]; then
+        echo -e "${YELLOW}Making uv/uvx visible to Claude Desktop (may ask for password)...${NC}"
+        sudo ln -sf "$UV_PATH" /usr/local/bin/uv
         sudo ln -sf "$UVX_PATH" /usr/local/bin/uvx
+        echo -e "${GREEN}✓${NC} uv linked to /usr/local/bin/uv"
         echo -e "${GREEN}✓${NC} uvx linked to /usr/local/bin/uvx"
     else
-        echo -e "${GREEN}✓${NC} uvx already in /usr/local/bin"
+        echo -e "${GREEN}✓${NC} uv and uvx already in /usr/local/bin"
     fi
 fi
 
