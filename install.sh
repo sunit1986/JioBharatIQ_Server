@@ -18,7 +18,31 @@ echo -e "${BOLD}  JioBharatIQ Server — Installing...${NC}"
 echo -e "${BOLD}============================================${NC}"
 echo ""
 
-# 1. Install uv if not present
+# ============================================================
+# 1. Ensure git is available (macOS needs Xcode CLT)
+# ============================================================
+if ! command -v git &> /dev/null; then
+    if [[ "$OSTYPE" == "darwin"* ]]; then
+        echo -e "${YELLOW}Installing Xcode Command Line Tools (needed for git)...${NC}"
+        echo -e "${YELLOW}A popup may appear — click 'Install' and wait for it to finish.${NC}"
+        xcode-select --install 2>/dev/null || true
+        # Wait for the installation to complete
+        echo -e "${YELLOW}Waiting for Xcode CLT installation to finish...${NC}"
+        until command -v git &> /dev/null; do
+            sleep 5
+        done
+        echo -e "${GREEN}✓${NC} Xcode Command Line Tools installed"
+    else
+        echo -e "${RED}ERROR: git is not installed. Please install git and re-run.${NC}"
+        exit 1
+    fi
+else
+    echo -e "${GREEN}✓${NC} git already installed"
+fi
+
+# ============================================================
+# 2. Install uv if not present
+# ============================================================
 if ! command -v uvx &> /dev/null; then
     echo -e "${YELLOW}Installing uv (package manager)...${NC}"
     curl -LsSf https://astral.sh/uv/install.sh | sh
@@ -33,7 +57,23 @@ else
     echo -e "${GREEN}✓${NC} uv already installed"
 fi
 
-# 2. MCP config snippet
+# ============================================================
+# 3. Symlink uvx into /usr/local/bin (so GUI apps can find it)
+# ============================================================
+if [[ "$OSTYPE" == "darwin"* ]]; then
+    UVX_PATH=$(which uvx)
+    if [ "$UVX_PATH" != "/usr/local/bin/uvx" ]; then
+        echo -e "${YELLOW}Making uvx visible to Claude Desktop...${NC}"
+        sudo ln -sf "$UVX_PATH" /usr/local/bin/uvx
+        echo -e "${GREEN}✓${NC} uvx linked to /usr/local/bin/uvx"
+    else
+        echo -e "${GREEN}✓${NC} uvx already in /usr/local/bin"
+    fi
+fi
+
+# ============================================================
+# 4. MCP config snippet
+# ============================================================
 MCP_CONFIG='{
   "mcpServers": {
     "JioBharatIQ": {
@@ -44,7 +84,7 @@ MCP_CONFIG='{
 }'
 
 # ============================================================
-# 3. Configure Claude Desktop
+# 5. Configure Claude Desktop
 # ============================================================
 if [[ "$OSTYPE" == "darwin"* ]]; then
     CLAUDE_CONFIG_DIR="$HOME/Library/Application Support/Claude"
@@ -59,7 +99,7 @@ mkdir -p "$CLAUDE_CONFIG_DIR"
 
 if [ -f "$CLAUDE_CONFIG" ]; then
     # Merge into existing config using Python (uv bundles Python)
-    uvx --from jiobharatiq-server python3 -c "
+    uv run python3 -c "
 import json, sys
 try:
     with open('${CLAUDE_CONFIG}', 'r') as f:
@@ -72,7 +112,7 @@ config['mcpServers']['JioBharatIQ'] = {'command': 'uvx', 'args': ['--from', 'git
 with open('${CLAUDE_CONFIG}', 'w') as f:
     json.dump(config, f, indent=2)
 " 2>/dev/null || {
-        # Fallback: use system python or write directly
+        # Fallback: write directly
         echo "$MCP_CONFIG" > "$CLAUDE_CONFIG"
     }
     echo -e "${GREEN}✓${NC} Claude Desktop configured"
@@ -82,13 +122,13 @@ else
 fi
 
 # ============================================================
-# 4. Configure Cursor (if installed)
+# 6. Configure Cursor (if installed)
 # ============================================================
 CURSOR_CONFIG="$HOME/.cursor/mcp.json"
 
 if [ -d "$HOME/.cursor" ]; then
     if [ -f "$CURSOR_CONFIG" ]; then
-        uvx --from jiobharatiq-server python3 -c "
+        uv run python3 -c "
 import json
 try:
     with open('${CURSOR_CONFIG}', 'r') as f:
@@ -113,7 +153,7 @@ else
 fi
 
 # ============================================================
-# 5. Pre-warm the uvx cache
+# 7. Pre-warm the uvx cache
 # ============================================================
 echo ""
 echo -e "${BOLD}Downloading server package...${NC}"
@@ -121,7 +161,7 @@ uvx --from "git+https://github.com/sunit1986/JioBharatIQ_Server.git" jiobharatiq
 echo -e "${GREEN}✓${NC} Package cached"
 
 # ============================================================
-# 6. Done!
+# 8. Done!
 # ============================================================
 echo ""
 echo -e "${BOLD}${GREEN}============================================${NC}"
