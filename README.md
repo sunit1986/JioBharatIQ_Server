@@ -19,7 +19,7 @@ curl -LsSf https://astral.sh/uv/install.sh | sh
   "mcpServers": {
     "JioBharatIQ": {
       "command": "uvx",
-      "args": ["jiobharatiq-server"]
+      "args": ["--from", "git+https://github.com/sunit1986/JioBharatIQ_Server.git", "jiobharatiq-server"]
     }
   }
 }
@@ -32,7 +32,7 @@ curl -LsSf https://astral.sh/uv/install.sh | sh
   "mcpServers": {
     "JioBharatIQ": {
       "command": "uvx",
-      "args": ["jiobharatiq-server"]
+      "args": ["--from", "git+https://github.com/sunit1986/JioBharatIQ_Server.git", "jiobharatiq-server"]
     }
   }
 }
@@ -41,7 +41,7 @@ curl -LsSf https://astral.sh/uv/install.sh | sh
 **Claude Code (CLI)**:
 
 ```bash
-claude mcp add JioBharatIQ -- uvx jiobharatiq-server
+claude mcp add JioBharatIQ -- uvx --from "git+https://github.com/sunit1986/JioBharatIQ_Server.git" jiobharatiq-server
 ```
 
 Restart the app. That's it.
@@ -87,11 +87,11 @@ All assets served via GitHub CDN — no local files needed:
 
 ## How updates work
 
-New version published to PyPI → team gets it on next app restart. No action needed.
+New version pushed to GitHub → team gets it automatically on next app restart. No action needed.
 
 Force immediate update:
 ```bash
-uvx --upgrade jiobharatiq-server
+uvx --reinstall --from "git+https://github.com/sunit1986/JioBharatIQ_Server.git" jiobharatiq-server
 ```
 
 ## Troubleshooting
