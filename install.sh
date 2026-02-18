@@ -38,7 +38,7 @@ MCP_CONFIG='{
   "mcpServers": {
     "JioBharatIQ": {
       "command": "uvx",
-      "args": ["jiobharatiq-server"]
+      "args": ["--from", "git+https://github.com/sunit1986/JioBharatIQ_Server.git", "jiobharatiq-server"]
     }
   }
 }'
@@ -68,7 +68,7 @@ except:
     config = {}
 if 'mcpServers' not in config:
     config['mcpServers'] = {}
-config['mcpServers']['JioBharatIQ'] = {'command': 'uvx', 'args': ['jiobharatiq-server']}
+config['mcpServers']['JioBharatIQ'] = {'command': 'uvx', 'args': ['--from', 'git+https://github.com/sunit1986/JioBharatIQ_Server.git', 'jiobharatiq-server']}
 with open('${CLAUDE_CONFIG}', 'w') as f:
     json.dump(config, f, indent=2)
 " 2>/dev/null || {
@@ -97,7 +97,7 @@ except:
     config = {}
 if 'mcpServers' not in config:
     config['mcpServers'] = {}
-config['mcpServers']['JioBharatIQ'] = {'command': 'uvx', 'args': ['jiobharatiq-server']}
+config['mcpServers']['JioBharatIQ'] = {'command': 'uvx', 'args': ['--from', 'git+https://github.com/sunit1986/JioBharatIQ_Server.git', 'jiobharatiq-server']}
 with open('${CURSOR_CONFIG}', 'w') as f:
     json.dump(config, f, indent=2)
 " 2>/dev/null || {
@@ -117,7 +117,7 @@ fi
 # ============================================================
 echo ""
 echo -e "${BOLD}Downloading server package...${NC}"
-uvx jiobharatiq-server --help > /dev/null 2>&1 || true
+uvx --from "git+https://github.com/sunit1986/JioBharatIQ_Server.git" jiobharatiq-server --help > /dev/null 2>&1 || true
 echo -e "${GREEN}✓${NC} Package cached"
 
 # ============================================================

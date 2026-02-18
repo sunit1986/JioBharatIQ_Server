@@ -2,7 +2,7 @@
   "mcpServers": {
     "JioBharatIQ": {
       "command": "uvx",
-      "args": ["jiobharatiq-server"]
+      "args": ["--from", "git+https://github.com/sunit1986/JioBharatIQ_Server.git", "jiobharatiq-server"]
     }
   }
 }
