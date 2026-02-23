@@ -34,15 +34,34 @@ _SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 
 def _auto_update():
     """Download latest knowledge base from GitHub.
-    Updates knowledge_base.py only — server code updates come via PyPI."""
+    Updates knowledge_base.py only — server code updates come via PyPI.
+    Falls back to certifi certs on macOS Python.org installs that lack system certs."""
+    import ssl as _ssl
     target = os.path.join(_SCRIPT_DIR, "knowledge_base.py")
     url = f"{_REPO_BASE}/knowledge_base.py"
+
+    def _fetch(ctx=None):
+        if ctx:
+            return urllib.request.urlopen(url, context=ctx, timeout=10).read()
+        return urllib.request.urlopen(url, timeout=10).read()
+
     try:
-        data = urllib.request.urlopen(url, timeout=10).read()
+        # Attempt 1: standard SSL with system certificates
+        data = _fetch()
+    except Exception:
+        try:
+            # Attempt 2: certifi CA bundle (macOS Python.org without cert installer)
+            import certifi as _certifi
+            _ctx = _ssl.create_default_context(cafile=_certifi.where())
+            data = _fetch(_ctx)
+        except Exception:
+            return  # offline or no certs available — use cached version silently
+
+    try:
         with open(target, "wb") as f:
             f.write(data)
     except Exception:
-        pass  # offline or error — use cached version
+        pass  # read-only filesystem — use cached version
 
 
 if not os.environ.get("_JDS_NO_UPDATE"):

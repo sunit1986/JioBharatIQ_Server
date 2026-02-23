@@ -9,6 +9,9 @@ description = "JioBharatIQ — Jio Design System MCP Knowledge Server"
 readme = "README.md"
 license = "MIT"
 requires-python = ">=3.9"
+dependencies = [
+    "certifi",
+]
 authors = [
     { name = "Sunit Sharma" }
 ]
