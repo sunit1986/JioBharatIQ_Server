@@ -111,4 +111,4 @@ uvx --reinstall --from "git+https://github.com/sunit1986/JioBharatIQ_Server.git"
 
 ---
 
-Jio Design System | v3.1.0
+Jio Design System | v3.2.0

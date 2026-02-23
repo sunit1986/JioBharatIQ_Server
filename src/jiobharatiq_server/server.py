@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 JDS Knowledge Server - MCP Server for Jio Design System
-Version: 3.1.0
+Version: 3.2.0
 
 SECURITY RULES (enforced at every layer):
 - JSON-only responses — no markdown, no explanations, no reasoning
@@ -22,7 +22,7 @@ import re
 import sys
 import urllib.request
 
-SERVER_VERSION = "3.1.0"
+SERVER_VERSION = "3.2.0"
 
 # ============================================================================
 # AUTO-UPDATE: fetch latest knowledge base from GitHub on every startup
@@ -133,11 +133,18 @@ def sanitize_output(obj):
 
 TOOL_REMINDER = (
     "\n\n---\n"
-    "REMINDER: (1) Call get_assets FIRST to get GitHub-hosted CDN URLs for all JDS assets. "
-    "(2) Use JioType font ONLY — never system fonts. "
-    "(3) Use JDS icons from assets/icons/ — NEVER use emojis. "
-    "(4) Call resolve_token for colors/spacing — never hardcode. "
-    "(5) Use the cdn_url paths from get_assets response directly in your HTML src/url attributes — no file copying needed."
+    "MANDATORY JDS RULES — enforce on every single line of output:\n"
+    "FONTS: JioType ONLY. Never Inter, Arial, Helvetica, Roboto, system-ui, or sans-serif.\n"
+    "ICONS: JDS SVG library ONLY (find_icon → svg_path). Never Material icons, Heroicons, Feather, or emoji as icons.\n"
+    "COLORS: JDS tokens ONLY. Never #a855f7, #22c55e, #f97316, #ec4899, or any non-JDS color.\n"
+    "  Primary=#3535f3 | Secondary=#f7ab20 | Sparkle=#1eccb0 | Error=#fa2f40 | Warning=#f06d0f | Success=#25ab21\n"
+    "  Grey-100=#141414 | Grey-40=#e0e0e0 | Grey-20=#f5f5f5 | Surface-ghost=#eeeeef | Surface-bold=#3900ad\n"
+    "TYPOGRAPHY: JDS scale ONLY. Never ad-hoc px sizes. Use: Display/Headline/Title/Body/Label variants.\n"
+    "COMPONENTS: JDS specs ONLY (lookup_component). Never custom/arbitrary component implementations.\n"
+    "OPACITY: JDS tokens. invisible=0, disabled=0.38, enabled=1. Never arbitrary opacity values.\n"
+    "LOADING STATES: Use Skeleton (shimmer) for content loading. NOT spinners.\n"
+    "LIGHT MODE: Default to light mode ALWAYS. Only dark mode if explicitly requested by user.\n"
+    "ASSETS: Call get_assets FIRST. Use cdn_url directly in HTML — no file copying."
 )
 
 
@@ -626,17 +633,72 @@ def handle_request(request: dict) -> dict:
                 },
                 "instructions": (
                     f"You are connected to the JDS (Jio Design System) knowledge server v{SERVER_VERSION}. "
-                    "When building any prototype or UI:\n"
-                    "1. ALWAYS call get_assets FIRST to get GitHub-hosted CDN URLs for all JDS assets. "
-                    "Use the cdn_url values DIRECTLY in your HTML src and url() attributes — no file copying needed.\n"
-                    "2. Use JioType font family (woff2 for web, ttf for native) — NEVER use system fonts like Inter, Arial, Helvetica, or sans-serif.\n"
-                    "3. Call lookup_component before implementing any JDS component.\n"
-                    "4. Call resolve_token for colors, typography, spacing — NEVER hardcode values.\n"
-                    "5. Use find_icon tool to get SVG path data for any icon — returns svg_path for direct HTML inline use. "
-                    "1301 icons available (71 JSX + 1230 SVG).\n"
-                    "6. Use HelloJio animations from assets/animations/ for assistant/AI states.\n"
-                    "7. NEVER use emojis anywhere in the UI — use JDS icons from assets/icons/ instead.\n"
-                    "8. NEVER use placeholder or dummy assets — always use real JDS assets from get_assets."
+                    "PROTOTYPE GENERATION RULES — apply to every output without exception:\n\n"
+
+                    "=== LAYER 1: FOUNDATION (Always load first) ===\n"
+                    "1. Call get_assets FIRST. Use cdn_url values DIRECTLY in HTML src/url — no file copying.\n"
+                    "2. Single-file HTML prototype. No React, no Tailwind, no CDN libs, no build tools. "
+                    "All CSS and JS inline. One index.html. Serve with python3 -m http.server.\n"
+                    "3. Mobile canvas: 360×800px. Always wrap in realistic phone frame: rounded corners, "
+                    "dark border, notch, status bar (time + battery + signal), scrollable screen area.\n"
+                    "4. Add left sidebar outside phone listing all screens. Click = show screen in phone. "
+                    "Highlight active screen.\n"
+                    "5. LIGHT MODE by default for ALL prototypes. Only dark mode if user explicitly asks.\n\n"
+
+                    "=== LAYER 2: JDS ASSET RESOLUTION (Mandatory before writing any code) ===\n"
+                    "6. FONTS: JioType ONLY. From get_assets cdn_url. NEVER Inter/Arial/Helvetica/Roboto.\n"
+                    "7. ICONS: Call find_icon — returns svg_path. Inline SVG in HTML. "
+                    "NEVER Material, Feather, Heroicons, or emoji. JDS library: IcMic, IcSearch, IcSendMessage, "
+                    "IcChevronRight, IcChevronLeft, IcClose, IcAdd, IcProfile, IcChat, IcHome, etc.\n"
+                    "8. COLORS: JDS tokens ONLY. resolve_token to verify. "
+                    "primary-50=#3535f3 | secondary-50=#f7ab20 | sparkle-50=#1eccb0 | "
+                    "error=#fa2f40 | grey-100=#141414 | grey-20=#f5f5f5 | "
+                    "surface-ghost=#eeeeef | surface-bold=#3900ad | surface-ghost-icon=#e7e9ff.\n"
+                    "9. TYPOGRAPHY: JDS scale. Display 52px / Headline 28-32px / Title 16-20px / "
+                    "Body-l 16px / Body-m 15px / Body-s 14px / Label-m 13px / Caption 11px. "
+                    "NEVER arbitrary sizes.\n"
+                    "10. COMPONENTS: lookup_component before building Button, Card, BottomSheet, etc. "
+                    "Build from JDS specs — NEVER custom components.\n"
+                    "11. OPACITY: invisible=0, disabled=0.38, enabled=1. NEVER arbitrary values.\n"
+                    "12. ANIMATIONS: HelloJio MP4s from get_assets for AI assistant states. "
+                    "148×148px for full-screen voice, 32×32px inline.\n\n"
+
+                    "=== LAYER 3: BLUEPRINT PROMPT (Prototype quality) ===\n"
+                    "13. Show 3 UX directions per feature. Each direction = different interaction model "
+                    "(not just different visuals). All accessible from sidebar.\n"
+                    "14. Real content only. Indian names, ₹ amounts, Hindi/English bilingual labels. "
+                    "No Lorem Ipsum, no 'John Doe', no 'Sample Text'.\n"
+                    "15. Exact data makes prototypes production-ready: name real cricket players, "
+                    "real Bollywood films, real song titles, real product names from Jio ecosystem.\n"
+                    "16. Include ALL states: default, loading (shimmer skeleton — NEVER spinners), "
+                    "empty state (with actionable guidance), error, success. All navigable from sidebar.\n\n"
+
+                    "=== LAYER 4: CULTURAL CONTEXT (JBIQ specifics) ===\n"
+                    "17. Hindi-first copy where appropriate. Key phrases: 'Namasté', 'Aap kaise hain?', "
+                    "'Bahut achha!', 'Shukriya'. Use Devanagari for Hindi text (Noto Sans Devanagari).\n"
+                    "18. Indian context: IPL cricket, Bollywood, JioSaavn, JioCinema, JioMart, "
+                    "Tira, regional languages (Telugu, Tamil, Bengali, Kannada, Marathi).\n"
+                    "19. JioBharatIQ brand name = JBIQ. Jio Omni AI = JBIQ. Never 'Jio Omni AI'.\n"
+                    "20. Assistant avatar: 4-dot grid (blue=#3535f3, orange=#f7ab20, purple=#6464ff, "
+                    "teal=#1eccb0). Use HelloJio MP4 for breathing/listening animation states.\n\n"
+
+                    "=== LAYER 5: POLISH PASS (Always include) ===\n"
+                    "21. Staggered CSS entrance animations (fadeDown with animation-delay: 0s, 0.1s, 0.15s, 0.2s).\n"
+                    "22. AI thinking indicator: animated shimmer text or 3-dot pulse during processing states.\n"
+                    "23. Feedback row below every AI response: thumbs-up, thumbs-down, copy, share icons.\n"
+                    "24. Celebration overlays for success states (confetti burst, checkmark animation).\n"
+                    "25. Toast notifications for user actions (bottom of screen, auto-dismiss 3s).\n\n"
+
+                    "=== JDS COMPONENT QUICK REFERENCE ===\n"
+                    "Button: primary=#3535f3 filled, secondary=outlined, tertiary=text. Radius=pill(999px). "
+                    "Height: small=32px, medium=44px, large=52px.\n"
+                    "InputField: bg=#eeeeef, radius=23px, no border, JioType 14px.\n"
+                    "Card: bg=white, radius=16px, border=1px rgba(36,38,43,0.12), shadow=0 4px 16px rgba(0,0,0,0.08).\n"
+                    "BottomSheet: bg=white, top-radius=16px, handle=4×32px grey bar, max-height=80vh.\n"
+                    "Toast: bottom-center mobile, radius=12px, max 2 lines, NEVER primary button inside.\n"
+                    "Skeleton: bg=#f5f5f5 (grey-20) ONLY. Shimmer animation. Use for ALL content loading.\n"
+                    "Speak button: bg=#3900ad, radius=999px, padding=12px 20px, white text+icon, JioType Bold 16px.\n"
+                    "Icon buttons: 36×36px circle, bg=#e7e9ff (ghost-icon), icon 20px #170054.\n"
                 )
             }
         }
