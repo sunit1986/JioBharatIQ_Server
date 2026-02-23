@@ -48,9 +48,28 @@ def _auto_update():
 if not os.environ.get("_JDS_NO_UPDATE"):
     _auto_update()
 
-from .knowledge_base import (
-    COMPONENTS, TOKENS, ICON_CATEGORIES, ICONS_SEARCHABLE, FIGMA_REFERENCES
-)
+from .knowledge_base import COMPONENTS, TOKENS, ICONS_SEARCHABLE
+
+# Support both old (FIGMA_REFERENCES) and new (FIGMA_REFS) naming
+try:
+    from .knowledge_base import FIGMA_REFERENCES
+except ImportError:
+    try:
+        from .knowledge_base import FIGMA_REFS as FIGMA_REFERENCES
+    except ImportError:
+        FIGMA_REFERENCES = {}
+
+# Support both old (ICON_CATEGORIES) and new (no categories — derive from icons)
+try:
+    from .knowledge_base import ICON_CATEGORIES
+except ImportError:
+    # Build a minimal category index from ICONS_SEARCHABLE
+    _cats = {}
+    if isinstance(ICONS_SEARCHABLE, dict):
+        for name, data in ICONS_SEARCHABLE.items():
+            cat = data.get("category", "general")
+            _cats.setdefault(cat, []).append(name)
+    ICON_CATEGORIES = _cats
 
 
 # ============================================================================
@@ -176,6 +195,10 @@ def lookup_component(component_name: str) -> dict:
         "Ratingbar": "RatingBar",
         "Rating Bar": "RatingBar",
         "Avatarv2": "AvatarV2",
+        "Searchbox": "SearchBox",
+        "Search Box": "SearchBox",
+        "Selectorbutton": "SelectorButton",
+        "Selector Button": "SelectorButton",
     }
     lookup_key = aliases.get(lookup_key, lookup_key)
 
@@ -189,13 +212,19 @@ def lookup_component(component_name: str) -> dict:
 
     component = COMPONENTS[lookup_key]
     result = {
-        "component": component["name"],
-        "import_path": component["import_path"],
+        "component": component.get("name", lookup_key),
+        "import_path": component.get("import_path", "@jds/core"),
         "description": component.get("description", ""),
         "props": component.get("props", {}),
         "variants": {},
-        "code_example": component.get("code_example", "")
+        "code_example": component.get("code_example", component.get("css_example", ""))
     }
+    # Surface extra spec fields (tokens, sizes, figma_node, etc.)
+    for extra_key in ["tokens", "sizes", "figma_node", "storybook",
+                      "dismissal", "position", "_rule"]:
+        val = component.get(extra_key)
+        if val:
+            result[extra_key] = val
 
     # Collect all variant info dynamically
     for key in ["kinds", "sizes", "states", "types", "orientations",
@@ -229,37 +258,70 @@ def resolve_token(token_category: str, token_name: str = None) -> dict:
 
     category_data = TOKENS[token_category]
 
+    # Detect if category_data is flat {token: value} or nested {subcategory: {token: value}}
+    def _is_flat(d):
+        """True = flat {token: value}. False = nested {subcategory: {token: value}}.
+        Rules (in priority order):
+        1. Any scalar top-level value → flat (e.g. opacity: {"invisible": "0"})
+        2. Any top-level KEY contains a hyphen → flat (e.g. typography: {"body-s": {...}})
+        3. All values are dicts AND sub-dict keys contain hyphens → nested subcategory
+        4. Otherwise → flat
+        """
+        if not isinstance(d, dict):
+            return True
+        items = [(k, v) for k, v in d.items() if not k.startswith('_')]
+        if not items:
+            return True
+        # Rule 1: any scalar top-level value → flat
+        if any(not isinstance(v, dict) for _, v in items):
+            return True
+        # Rule 2: any top-level KEY has a hyphen → flat token names (e.g. "body-s", "display-l")
+        if any('-' in k for k, _ in items):
+            return True
+        # Rule 3: all values are dicts — check if sub-dicts have hyphenated token-name keys
+        for _, v in items:
+            if isinstance(v, dict):
+                # Token name pattern: ends with hyphen+number/level e.g. "primary-50", "grey-100"
+                if any(k[-1].isdigit() and '-' in k for k in v.keys()):
+                    return False  # subcategory container
+        return True
+
+    _flat = _is_flat(category_data)
+
     if not token_name:
-        if token_category == "colors":
+        if _flat:
+            sample = {k: v for k, v in list(category_data.items())[:3] if not k.startswith('_')}
             return sanitize_output({
                 "category": token_category,
-                "subcategories": list(category_data.keys()),
-                "sample_tokens": {
-                    "primary-50": category_data["primary"]["primary-50"],
-                    "grey-100": category_data["grey"]["grey-100"],
-                    "error": category_data["feedback"]["error"]
-                }
-            })
-        elif token_category == "typography":
-            return sanitize_output({
-                "category": token_category,
-                "subcategories": list(category_data.keys()),
-                "sample_tokens": {
-                    "heading-xl": category_data["heading"]["heading-xl"],
-                    "body-s": category_data["body"]["body-s"]
-                }
+                "token_count": len([k for k in category_data if not k.startswith('_')]),
+                "sample_tokens": sample
             })
         else:
+            # Legacy nested format
+            keys = [k for k in category_data.keys() if not k.startswith('_')]
             return sanitize_output({
                 "category": token_category,
-                "tokens": category_data
+                "subcategories": keys
             })
 
     token_name = sanitize_input(token_name)
     token_name_lower = token_name.lower().replace("_", "-")
 
-    if token_category in ["colors", "typography"]:
+    if _flat:
+        # Flat search: {token_name: value}
+        for key, value in category_data.items():
+            if not key.startswith('_') and token_name_lower in key.lower():
+                return sanitize_output({
+                    "category": token_category,
+                    "token": key,
+                    "value": value
+                })
+        return {"error": f"Token not found in {token_category}"}
+    else:
+        # Legacy nested search: {subcategory: {token_name: value}}
         for subcategory, tokens in category_data.items():
+            if not isinstance(tokens, dict):
+                continue
             for key, value in tokens.items():
                 if token_name_lower in key.lower():
                     return sanitize_output({
@@ -268,15 +330,6 @@ def resolve_token(token_category: str, token_name: str = None) -> dict:
                         "token": key,
                         "value": value
                     })
-        return {"error": f"Token not found in {token_category}"}
-    else:
-        for key, value in category_data.items():
-            if token_name_lower in key.lower():
-                return sanitize_output({
-                    "category": token_category,
-                    "token": key,
-                    "value": value
-                })
         return {"error": f"Token not found in {token_category}"}
 
 
@@ -474,12 +527,14 @@ def get_figma_reference(design_name: str) -> dict:
     design_name_lower = design_name.lower().replace(" ", "_").replace("-", "_")
 
     for key, ref_data in FIGMA_REFERENCES.items():
-        if design_name_lower in key or design_name_lower in ref_data["name"].lower():
+        # Support both "name" (old) and "title" (new) field names
+        ref_name = ref_data.get("name", ref_data.get("title", key))
+        if design_name_lower in key or design_name_lower in ref_name.lower():
             result = {
-                "name": ref_data["name"],
-                "file_key": ref_data["file_key"],
-                "url": ref_data["url"],
-                "description": ref_data.get("description", "")
+                "name": ref_name,
+                "file_key": ref_data.get("file_key", ref_data.get("url", "")),
+                "url": ref_data.get("url", ""),
+                "description": ref_data.get("description", ref_data.get("usage", ""))
             }
             if "node_id" in ref_data:
                 result["node_id"] = ref_data["node_id"]
