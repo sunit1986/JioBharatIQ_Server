@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 JDS Knowledge Server - MCP Server for Jio Design System
-Version: 3.2.0
+Version: 3.3.0
 
 SECURITY RULES (enforced at every layer):
 - JSON-only responses — no markdown, no explanations, no reasoning
@@ -22,7 +22,7 @@ import re
 import sys
 import urllib.request
 
-SERVER_VERSION = "3.2.0"
+SERVER_VERSION = "3.3.0"
 
 # ============================================================================
 # AUTO-UPDATE: fetch latest knowledge base from GitHub on every startup
@@ -441,6 +441,28 @@ def get_assets(asset_type: str = "all", project_dir: str = "") -> dict:
     _ANIMATION_FILES = [
         "HelloJio_Breath(IdleState)_241.mp4", "HelloJio_Listening_241.mp4",
     ]
+    _STATE_FILES_LIGHT = [
+        "Idle_state.mp4",
+        "Listening_state.mp4",
+        "Speaking_State.mp4",
+        "Bot to bot speaking_state.mp4",
+        "Thinking_state.mp4",
+        "Thinking Reveal_State.mp4",
+        "Thinking End_state.mp4",
+        "User speaking to bot_state.mp4",
+        "HelloJio_Complete_242.mp4",
+    ]
+    _STATE_FILES_DARK = [
+        "HelloJio_Breath(IdleState)_242.mp4",
+        "HelloJio_Listening_242.mp4",
+        "HelloJio_BotSpeaking_242.mp4",
+        "HelloJio_ThinkingToBotSpeak 242.mp4",
+        "HelloJio_ThinkingLoop_242.mp4",
+        "HelloJio_ThinkingReveal_242.mp4",
+        "HelloJio_ThinkingEnd_242.mp4",
+        "HelloJio_UserSpeaktoBotSpeak_242.mp4",
+        "HelloJio_Complete_242.mp4",
+    ]
     _ICON_FILES = [
         "IcAccessibility.jsx", "IcAdd.jsx", "IcAlarm.jsx", "IcAlbum.jsx",
         "IcArrowBack.jsx", "IcBack.jsx", "IcBrain.jsx", "IcBurgerMenu.jsx",
@@ -468,6 +490,7 @@ def get_assets(asset_type: str = "all", project_dir: str = "") -> dict:
     font_cdn = f"{cdn_base}/fonts/woff2"
     anim_cdn = f"{cdn_base}/animations"
     icon_cdn = f"{cdn_base}/icons"
+    states_cdn = f"{cdn_base}/states"
 
     asset_map = {
         "fonts": {
@@ -505,18 +528,75 @@ def get_assets(asset_type: str = "all", project_dir: str = "") -> dict:
                 "1281 SVG icons available at icons/svg/{name}.svg. Use find_icon tool for "
                 "instant svg_path data without fetching files."
             ),
+        },
+        "states": {
+            "description": "Voice Q&A animation states — 9 Light + 9 Dark MP4s for AI voice interface",
+            "cdn_base": states_cdn,
+            "light_cdn": f"{states_cdn}/Light",
+            "dark_cdn": f"{states_cdn}/Dark",
+            "state_map": {
+                "idle": {
+                    "light": f"{states_cdn}/Light/Idle_state.mp4",
+                    "dark": f"{states_cdn}/Dark/HelloJio_Breath(IdleState)_242.mp4",
+                },
+                "listening": {
+                    "light": f"{states_cdn}/Light/Listening_state.mp4",
+                    "dark": f"{states_cdn}/Dark/HelloJio_Listening_242.mp4",
+                },
+                "speaking": {
+                    "light": f"{states_cdn}/Light/Speaking_State.mp4",
+                    "dark": f"{states_cdn}/Dark/HelloJio_BotSpeaking_242.mp4",
+                },
+                "bot_to_bot_speaking": {
+                    "light": f"{states_cdn}/Light/Bot%20to%20bot%20speaking_state.mp4",
+                    "dark": f"{states_cdn}/Dark/HelloJio_ThinkingToBotSpeak%20242.mp4",
+                },
+                "thinking": {
+                    "light": f"{states_cdn}/Light/Thinking_state.mp4",
+                    "dark": f"{states_cdn}/Dark/HelloJio_ThinkingLoop_242.mp4",
+                },
+                "thinking_reveal": {
+                    "light": f"{states_cdn}/Light/Thinking%20Reveal_State.mp4",
+                    "dark": f"{states_cdn}/Dark/HelloJio_ThinkingReveal_242.mp4",
+                },
+                "thinking_end": {
+                    "light": f"{states_cdn}/Light/Thinking%20End_state.mp4",
+                    "dark": f"{states_cdn}/Dark/HelloJio_ThinkingEnd_242.mp4",
+                },
+                "user_speaking": {
+                    "light": f"{states_cdn}/Light/User%20speaking%20to%20bot_state.mp4",
+                    "dark": f"{states_cdn}/Dark/HelloJio_UserSpeaktoBotSpeak_242.mp4",
+                },
+                "complete": {
+                    "light": f"{states_cdn}/Light/HelloJio_Complete_242.mp4",
+                    "dark": f"{states_cdn}/Dark/HelloJio_Complete_242.mp4",
+                },
+            },
+            "usage_note": (
+                "Use state_map for semantic lookup by state name. "
+                "Light theme for default/light mode, Dark theme for dark mode. "
+                "Usage: <video src=\"{cdn_url}\" autoplay loop muted playsinline></video> "
+                "States: idle, listening, speaking, bot_to_bot_speaking, thinking, "
+                "thinking_reveal, thinking_end, user_speaking, complete"
+            ),
+            "files": (
+                [{"name": f, "cdn_url": f"{states_cdn}/Light/{f.replace(' ', '%20')}", "theme": "light"}
+                 for f in _STATE_FILES_LIGHT] +
+                [{"name": f, "cdn_url": f"{states_cdn}/Dark/{f.replace(' ', '%20')}", "theme": "dark"}
+                 for f in _STATE_FILES_DARK]
+            ),
         }
     }
 
-    if asset_type not in ("all", "fonts", "animations", "icons", "svg"):
+    if asset_type not in ("all", "fonts", "animations", "icons", "svg", "states"):
         return {
             "error": "Unknown asset type",
-            "available_types": ["all", "fonts", "animations", "icons"]
+            "available_types": ["all", "fonts", "animations", "icons", "states"]
         }
 
     result = {"cdn_base": cdn_base, "types": {}}
 
-    types_to_include = [asset_type] if asset_type != "all" else ["fonts", "animations", "icons"]
+    types_to_include = [asset_type] if asset_type != "all" else ["fonts", "animations", "icons", "states"]
 
     for atype in types_to_include:
         info = asset_map[atype]
@@ -527,7 +607,8 @@ def get_assets(asset_type: str = "all", project_dir: str = "") -> dict:
             "count": len(info["files"]),
         }
         # Add usage hints and extra fields
-        for key in ("usage_css", "usage_html", "usage_note", "svg_cdn_base", "svg_usage_note"):
+        for key in ("usage_css", "usage_html", "usage_note", "svg_cdn_base", "svg_usage_note",
+                    "state_map", "light_cdn", "dark_cdn"):
             if key in info:
                 entry[key] = info[key]
         result["types"][atype] = entry
@@ -626,13 +707,13 @@ TOOLS = [
     },
     {
         "name": "get_assets",
-        "description": f"[JioBharatIQ v{SERVER_VERSION}] Get JDS asset CDN URLs for prototyping. Returns GitHub-hosted URLs for fonts (JioType WOFF2), animations (HelloJio MP4s), icons (71 JSX + 1281 SVG). MANDATORY: Call this FIRST when building any prototype.",
+        "description": f"[JioBharatIQ v{SERVER_VERSION}] Get JDS asset CDN URLs for prototyping. Returns GitHub-hosted URLs for fonts (JioType WOFF2), animations (HelloJio MP4s), icons (71 JSX + 1281 SVG), and Voice Q&A states (9 Light + 9 Dark MP4s). MANDATORY: Call this FIRST when building any prototype.",
         "inputSchema": {
             "type": "object",
             "properties": {
                 "asset_type": {
                     "type": "string",
-                    "description": "Asset type: 'all', 'fonts', 'animations', 'icons' (default: 'all')",
+                    "description": "Asset type: 'all', 'fonts', 'animations', 'icons', 'states' (default: 'all')",
                     "default": "all"
                 },
                 "project_dir": {
@@ -735,6 +816,7 @@ def handle_request(request: dict) -> dict:
                     "Build from JDS specs — NEVER custom components.\n"
                     "11. OPACITY: invisible=0, disabled=0.38, enabled=1. NEVER arbitrary values.\n"
                     "12. ANIMATIONS: HelloJio MP4s from get_assets for AI assistant states. "
+                    "Voice Q&A states (idle/listening/speaking/thinking/etc) available via get_assets('states'). "
                     "148×148px for full-screen voice, 32×32px inline.\n\n"
 
                     "=== LAYER 3: BLUEPRINT PROMPT (Prototype quality) ===\n"
@@ -754,7 +836,7 @@ def handle_request(request: dict) -> dict:
                     "Tira, regional languages (Telugu, Tamil, Bengali, Kannada, Marathi).\n"
                     "19. JioBharatIQ brand name = JBIQ. Jio Omni AI = JBIQ. Never 'Jio Omni AI'.\n"
                     "20. Assistant avatar: 4-dot grid (blue=#3535f3, orange=#f7ab20, purple=#6464ff, "
-                    "teal=#1eccb0). Use HelloJio MP4 for breathing/listening animation states.\n\n"
+                    "teal=#1eccb0). Use get_assets('states') for all Voice Q&A states (idle, listening, speaking, thinking, etc).\n\n"
 
                     "=== LAYER 5: POLISH PASS (Always include) ===\n"
                     "21. Staggered CSS entrance animations (fadeDown with animation-delay: 0s, 0.1s, 0.15s, 0.2s).\n"
