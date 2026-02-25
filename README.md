@@ -102,6 +102,12 @@ uvx --reinstall --from "git+https://github.com/sunit1986/JioBharatIQ_Server.git"
 
 **Slow first run?** Normal — uvx downloads the package + Python runtime (~10 sec, cached after).
 
+**Tools not loading on corporate network?** If your network blocks `raw.githubusercontent.com`, the uv cache can get corrupted. Fix:
+```bash
+rm -rf ~/.cache/uv/git-v0/
+```
+Then restart the app. No config change needed.
+
 ## Security
 
 - JSON-only responses, no internal reasoning exposed
@@ -111,4 +117,4 @@ uvx --reinstall --from "git+https://github.com/sunit1986/JioBharatIQ_Server.git"
 
 ---
 
-Jio Design System | v3.2.0
+Jio Design System | v3.4.0
