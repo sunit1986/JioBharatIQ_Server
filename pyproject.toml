@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "jiobharatiq-server"
-version = "3.4.0"
+dynamic = ["version"]
 description = "JioBharatIQ — Jio Design System MCP Knowledge Server"
 readme = "README.md"
 license = "MIT"
@@ -35,6 +35,9 @@ jiobharatiq-server = "jiobharatiq_server.__main__:main"
 [project.urls]
 Homepage = "https://github.com/sunit1986/JioBharatIQ_Server"
 Documentation = "https://sunit1986.github.io/design-prototypes/jds-install-guide.html"
+
+[tool.hatch.version]
+path = "src/jiobharatiq_server/__init__.py"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/jiobharatiq_server"]
