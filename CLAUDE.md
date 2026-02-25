@@ -1,4 +1,4 @@
-# JDS Knowledge Server v3.2.0
+# JDS Knowledge Server v3.4.0
 
 When building any prototype or UI using this server, follow these rules and use the embedded reference data below.
 
