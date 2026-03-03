@@ -22,7 +22,7 @@ import re
 import sys
 import urllib.request
 
-SERVER_VERSION = "3.2.0"
+SERVER_VERSION = "3.5.0"
 
 # ============================================================================
 # AUTO-UPDATE: fetch latest files from GitHub on every startup
@@ -34,7 +34,7 @@ _SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 
 def _auto_update():
     """Download latest server files from GitHub. Re-exec if server.py changed."""
-    files = {"knowledge_base.py": False, "server.py": True}
+    files = {"knowledge_base.py": False, "validators.py": False, "server.py": True}
     server_changed = False
 
     for fname, check_change in files.items():
@@ -63,6 +63,12 @@ if __name__ == "__main__" and not os.environ.get("_JDS_NO_UPDATE"):
 from knowledge_base import (
     COMPONENTS, TOKENS, ICON_CATEGORIES, ICONS_SEARCHABLE, FIGMA_REFERENCES
 )
+
+try:
+    from validators import validate_prototype as _validate_prototype_fn
+    _HAS_VALIDATOR = True
+except ImportError:
+    _HAS_VALIDATOR = False
 
 # Assets directory (relative to this script)
 SCRIPT_DIR = _SCRIPT_DIR
@@ -184,6 +190,16 @@ def sanitize_int(value, default: int = 10, min_val: int = 1, max_val: int = 50) 
         return default
 
 
+MAX_HTML_INPUT_LENGTH = 200_000  # 200KB for prototype validation
+
+
+def sanitize_html_input(value: str) -> str:
+    """Sanitize HTML input for prototype validation. Allows HTML characters, enforces size limit."""
+    if not isinstance(value, str):
+        return ""
+    return value[:MAX_HTML_INPUT_LENGTH]
+
+
 # ============================================================================
 # SECURITY: Output sanitization — strip any accidental file paths or secrets
 # ============================================================================
@@ -232,7 +248,8 @@ TOOL_REMINDER = (
     "(2) Use JioType font ONLY — never system fonts. "
     "(3) Use JDS icons from assets/icons/ — NEVER use emojis. "
     "(4) Call resolve_token for colors/spacing — never hardcode. "
-    "(5) Use the cdn_url paths from get_assets response directly in your HTML src/url attributes — no file copying needed."
+    "(5) Use the cdn_url paths from get_assets response directly in your HTML src/url attributes — no file copying needed. "
+    "(6) Call validate_prototype on the completed HTML before dev handoff — zero errors required."
 )
 
 
@@ -657,6 +674,25 @@ TOOLS = [
             },
             "required": ["design_name"]
         }
+    },
+    {
+        "name": "validate_prototype",
+        "description": f"[JioBharatIQ v{SERVER_VERSION}] Validate an HTML prototype for JDS token compliance. Scans for hardcoded colors, wrong fonts (non-JioType), raw spacing values, and emoji usage. Returns violations with JDS token suggestions and a compliant/non-compliant verdict. MANDATORY: Run this before handing off any prototype to developers.",
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "html_content": {
+                    "type": "string",
+                    "description": "The complete HTML/CSS content of the prototype to validate (max 200KB)"
+                },
+                "strict": {
+                    "type": "boolean",
+                    "description": "If true, also flag warnings for unknown/unrecognised values in addition to errors. Default: false",
+                    "default": False
+                }
+            },
+            "required": ["html_content"]
+        }
     }
 ]
 
@@ -754,7 +790,8 @@ def handle_request(request: dict) -> dict:
         # SECURITY: Whitelist tool names
         allowed_tools = {
             "lookup_component", "resolve_token",
-            "find_icon", "get_figma_reference", "get_assets"
+            "find_icon", "get_figma_reference", "get_assets",
+            "validate_prototype"
         }
         if tool_name not in allowed_tools:
             return {
@@ -792,6 +829,15 @@ def handle_request(request: dict) -> dict:
                         }]
                     }
                 }
+            elif tool_name == "validate_prototype":
+                if not _HAS_VALIDATOR:
+                    result = {
+                        "error": "Validator not available. Restart the MCP server to auto-update."
+                    }
+                else:
+                    html = sanitize_html_input(args.get("html_content", ""))
+                    strict = bool(args.get("strict", False))
+                    result = _validate_prototype_fn(html, strict=strict, _tokens=TOKENS)
 
             return {
                 "jsonrpc": "2.0",

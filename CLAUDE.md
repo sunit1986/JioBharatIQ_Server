@@ -1,4 +1,4 @@
-# JDS Knowledge Server v3.4.0
+# JDS Knowledge Server v3.5.0
 
 When building any prototype or UI using this server, follow these rules and use the embedded reference data below.
 
@@ -12,6 +12,7 @@ When building any prototype or UI using this server, follow these rules and use 
 6. Use HelloJio animations from assets/animations/ for AI/assistant states.
 7. NEVER use emojis anywhere in UI. Use JDS icons instead.
 8. NEVER use placeholder or dummy assets. Always use real JDS assets.
+9. **Run the Compliance Pass** — call `validate_prototype` on the completed HTML before dev handoff. Zero errors required. Fix all violations before handing off.
 
 ---
 
