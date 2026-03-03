@@ -43,5 +43,7 @@ Thumbs.db
 # Logs
 *.log
 
-# Personal notes
+# Personal notes / local-only files
 MCP_JIOBHARATIQ.md
+CLAUDE.md
+.planning/
