@@ -22,7 +22,7 @@ import re
 import sys
 import urllib.request
 
-SERVER_VERSION = "3.5.1"
+SERVER_VERSION = "3.5.2"
 
 # ============================================================================
 # AUTO-UPDATE: fetch latest files from GitHub on every startup
@@ -53,12 +53,17 @@ def _auto_update():
         except Exception:
             pass  # offline or error — use cached version
 
-    if server_changed:
+    if server_changed and __name__ == "__main__":
         os.execv(sys.executable, [sys.executable] + sys.argv)
 
 
-if __name__ == "__main__" and not os.environ.get("_JDS_NO_UPDATE"):
-    _auto_update()
+# Always run auto-update on startup so knowledge_base.py is downloaded
+# even when imported as a package module (e.g. via uvx after cache clear)
+if not os.environ.get("_JDS_NO_UPDATE"):
+    try:
+        _auto_update()
+    except Exception:
+        pass
 
 from knowledge_base import (
     COMPONENTS, TOKENS, ICON_CATEGORIES, ICONS_SEARCHABLE, FIGMA_REFERENCES
