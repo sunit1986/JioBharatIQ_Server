@@ -22,7 +22,7 @@ import re
 import sys
 import urllib.request
 
-SERVER_VERSION = "3.5.2"
+SERVER_VERSION = "3.5.3"
 
 # ============================================================================
 # AUTO-UPDATE: fetch latest files from GitHub on every startup
