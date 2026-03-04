@@ -22,7 +22,7 @@ import re
 import sys
 import urllib.request
 
-SERVER_VERSION = "3.5.3"
+SERVER_VERSION = "3.5.4"
 
 # ============================================================================
 # AUTO-UPDATE: fetch latest files from GitHub on every startup
@@ -66,8 +66,10 @@ if not os.environ.get("_JDS_NO_UPDATE"):
         pass
 
 from knowledge_base import (
-    COMPONENTS, TOKENS, ICON_CATEGORIES, ICONS_SEARCHABLE, FIGMA_REFERENCES
+    COMPONENTS, TOKENS, ICONS_SEARCHABLE, FIGMA_REFERENCES
 )
+# Derive icon categories from ICONS_SEARCHABLE (ICON_CATEGORIES not in knowledge_base)
+ICON_CATEGORIES = {d["category"]: [] for d in ICONS_SEARCHABLE.values()}
 
 try:
     from validators import validate_prototype as _validate_prototype_fn
