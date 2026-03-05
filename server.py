@@ -22,7 +22,7 @@ import re
 import sys
 import urllib.request
 
-SERVER_VERSION = "3.5.4"
+SERVER_VERSION = "3.5.5"
 
 # ============================================================================
 # AUTO-UPDATE: fetch latest files from GitHub on every startup
@@ -308,12 +308,12 @@ def lookup_component(component_name: str) -> dict:
 
     component = COMPONENTS[lookup_key]
     result = {
-        "component": component["name"],
-        "import_path": component["import_path"],
+        "component": component.get("name", lookup_key),
+        "import_path": component.get("import_path", f"@jds/{lookup_key.lower()}"),
         "description": component.get("description", ""),
         "props": component.get("props", {}),
         "variants": {},
-        "code_example": component.get("code_example", "")
+        "code_example": component.get("code_example", component.get("css_example", ""))
     }
 
     # Collect all variant info dynamically
@@ -348,20 +348,21 @@ def resolve_token(token_category: str, token_name: str = None) -> dict:
         if token_category == "colors":
             return sanitize_output({
                 "category": token_category,
-                "subcategories": list(category_data.keys()),
+                "tokens": category_data,
                 "sample_tokens": {
-                    "primary-50": category_data["primary"]["primary-50"],
-                    "grey-100": category_data["grey"]["grey-100"],
-                    "error": category_data["feedback"]["error"]
+                    "primary-50": category_data.get("primary-50"),
+                    "grey-100": category_data.get("grey-100"),
+                    "error": category_data.get("error")
                 }
             })
         elif token_category == "typography":
             return sanitize_output({
                 "category": token_category,
-                "subcategories": list(category_data.keys()),
+                "tokens": category_data,
                 "sample_tokens": {
-                    "heading-xl": category_data["heading"]["heading-xl"],
-                    "body-s": category_data["body"]["body-s"]
+                    "display-l": category_data.get("display-l"),
+                    "headline-m": category_data.get("headline-m"),
+                    "body-m": category_data.get("body-m")
                 }
             })
         else:
