@@ -22,7 +22,7 @@ import re
 import sys
 import urllib.request
 
-SERVER_VERSION = "3.5.6"
+SERVER_VERSION = "3.5.7"
 
 # ============================================================================
 # AUTO-UPDATE: fetch latest files from GitHub on every startup
@@ -408,15 +408,19 @@ def find_icon(query: str, limit: int = 10) -> dict:
         }
 
     query_lower = query.lower()
+    # Support multi-word queries — split and match any word
+    query_words = query_lower.split()
     results = []
 
     cdn_icon_base = f"{_REPO_BASE}/assets/icons"
 
     for icon_name, icon_data in ICONS_SEARCHABLE.items():
         match_type = None
-        if query_lower in icon_name.lower():
+        icon_name_lower = icon_name.lower()
+        keywords = icon_data["keywords"]
+        if any(w in icon_name_lower for w in query_words):
             match_type = "name"
-        elif any(query_lower in keyword for keyword in icon_data["keywords"]):
+        elif any(w in kw for w in query_words for kw in keywords):
             match_type = "keyword"
 
         if match_type:
