@@ -48,8 +48,8 @@ MCP_JIOBHARATIQ.md
 CLAUDE.md
 .planning/
 
-# Plain-text source files — keep local only, never expose on GitHub
-server.py
-knowledge_base.py
-validators.py
-test_server.py
+# Plain-text source files — root level only, keep local, never expose on GitHub
+/server.py
+/knowledge_base.py
+/validators.py
+/test_server.py
