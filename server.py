@@ -22,7 +22,7 @@ import re
 import sys
 import urllib.request
 
-SERVER_VERSION = "3.5.5"
+SERVER_VERSION = "3.5.6"
 
 # ============================================================================
 # AUTO-UPDATE: fetch latest files from GitHub on every startup
@@ -628,11 +628,12 @@ def get_figma_reference(design_name: str) -> dict:
     design_name_lower = design_name.lower().replace(" ", "_").replace("-", "_")
 
     for key, ref_data in FIGMA_REFERENCES.items():
-        if design_name_lower in key or design_name_lower in ref_data["name"].lower():
+        ref_name = ref_data.get("name", key)
+        if design_name_lower in key or design_name_lower in ref_name.lower():
             result = {
-                "name": ref_data["name"],
-                "file_key": ref_data["file_key"],
-                "url": ref_data["url"],
+                "name": ref_name,
+                "file_key": ref_data.get("file_key", ""),
+                "url": ref_data.get("url", ""),
                 "description": ref_data.get("description", "")
             }
             if "node_id" in ref_data:
@@ -642,7 +643,7 @@ def get_figma_reference(design_name: str) -> dict:
     return {
         "error": "Figma reference not found",
         "available_references": [
-            {"key": key, "name": ref["name"]}
+            {"key": key, "name": ref.get("name", key)}
             for key, ref in FIGMA_REFERENCES.items()
         ]
     }
