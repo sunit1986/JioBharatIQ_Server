@@ -3,7 +3,7 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
-name = "jiobharatiq-server"
+name = "jds-mcp-server"
 dynamic = ["version"]
 description = "JioBharatIQ — Jio Design System MCP Knowledge Server"
 readme = "README.md"
@@ -31,6 +31,7 @@ classifiers = [
 
 [project.scripts]
 jiobharatiq-server = "jiobharatiq_server.__main__:main"
+jds-mcp-server = "jiobharatiq_server.__main__:main"
 
 [project.urls]
 Homepage = "https://github.com/sunit1986/JioBharatIQ_Server"
